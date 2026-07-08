@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: ticketing-platform
+  labels:
+    app: api-gateway
+    tier: application
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+        tier: application
+    spec:
+      containers:
+        - name: api-gateway
+          image: ticketing/api-gateway:latest
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: ticketing-platform-config
+            - secretRef:
+                name: ticketing-platform-secrets
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway-service
+  namespace: ticketing-platform
+  labels:
+    app: api-gateway
+    tier: application
+spec:
+  selector:
+    app: api-gateway
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000

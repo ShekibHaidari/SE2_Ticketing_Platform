@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  ticketing-postgres:
+    image: postgres:16-alpine
+    container_name: ticketing-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ticketing}
+      POSTGRES_USER: ${POSTGRES_USER:-ticketing_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ticketing_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  ticketing-redis:
+    image: redis:7-alpine
+    container_name: ticketing-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  ticketing-rabbitmq:
+    image: rabbitmq:3-management
+    container_name: ticketing-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-ticketing}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-ticketing_password}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  ticketing-api:
+    image: node:20-alpine
+    container_name: ticketing-api
+    restart: unless-stopped
+    working_dir: /app
+    command: sh -c "echo 'Backend placeholder container for course project.' && tail -f /dev/null"
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ticketing_user}:${POSTGRES_PASSWORD:-ticketing_password}@ticketing-postgres:5432/${POSTGRES_DB:-ticketing}
+      REDIS_URL: redis://ticketing-redis:6379
+      BROKER_URL: amqp://${RABBITMQ_DEFAULT_USER:-ticketing}:${RABBITMQ_DEFAULT_PASS:-ticketing_password}@ticketing-rabbitmq:5672
+    ports:
+      - "3000:3000"
+    depends_on:
+      - ticketing-postgres
+      - ticketing-redis
+      - ticketing-rabbitmq
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
