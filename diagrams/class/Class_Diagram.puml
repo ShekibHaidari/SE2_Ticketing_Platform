@@ -1,0 +1,232 @@
+@startuml
+title Class Diagram - End-to-End Event Ticketing Platform
+
+left to right direction
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #2C3E50
+  FontColor #1B2631
+}
+
+package "Identity and Access" {
+  class User {
+    +id: UUID
+    +fullName: String
+    +email: String
+    +phoneNumber: String
+    +passwordHash: String
+    +role: UserRole
+    +status: UserStatus
+    +createdAt: DateTime
+    +login()
+    +updateProfile()
+  }
+
+  class OrganizerProfile {
+    +id: UUID
+    +companyName: String
+    +businessEmail: String
+    +isVerified: Boolean
+    +verifiedAt: DateTime
+    +createEvent()
+    +viewDashboard()
+  }
+
+  enum UserRole {
+    CUSTOMER
+    ORGANIZER
+    ADMIN
+  }
+
+  enum UserStatus {
+    ACTIVE
+    SUSPENDED
+    PENDING
+  }
+}
+
+package "Event Catalog and Venue" {
+  class Event {
+    +id: UUID
+    +title: String
+    +description: String
+    +category: String
+    +startTime: DateTime
+    +endTime: DateTime
+    +status: EventStatus
+    +basePrice: Decimal
+    +publish()
+    +updateDetails()
+  }
+
+  class Venue {
+    +id: UUID
+    +name: String
+    +city: String
+    +address: String
+    +totalCapacity: Integer
+  }
+
+  class Hall {
+    +id: UUID
+    +name: String
+    +capacity: Integer
+  }
+
+  class Section {
+    +id: UUID
+    +name: String
+    +priceCategory: String
+  }
+
+  class Seat {
+    +id: UUID
+    +rowNumber: String
+    +seatNumber: String
+    +status: SeatStatus
+    +xCoordinate: Integer
+    +yCoordinate: Integer
+    +markAvailable()
+    +markLocked()
+    +markBooked()
+  }
+
+  enum EventStatus {
+    DRAFT
+    PUBLISHED
+    CANCELLED
+    COMPLETED
+  }
+
+  enum SeatStatus {
+    AVAILABLE
+    LOCKED
+    BOOKED
+  }
+}
+
+package "Reservation and Checkout" {
+  class Reservation {
+    +id: UUID
+    +status: ReservationStatus
+    +lockedAt: DateTime
+    +expiresAt: DateTime
+    +createdAt: DateTime
+    +confirm()
+    +cancel()
+    +expire()
+  }
+
+  class ReservationSeat {
+    +id: UUID
+    +lockedPrice: Decimal
+    +createdAt: DateTime
+  }
+
+  enum ReservationStatus {
+    PENDING
+    CONFIRMED
+    EXPIRED
+    CANCELLED
+  }
+
+  class Payment {
+    +id: UUID
+    +amount: Decimal
+    +currency: String
+    +status: PaymentStatus
+    +gatewayName: String
+    +gatewayTransactionId: String
+    +referenceId: String
+    +paidAt: DateTime
+    +verify()
+    +refund()
+  }
+
+  enum PaymentStatus {
+    INITIATED
+    PENDING
+    SUCCESS
+    FAILED
+    REFUNDED
+  }
+}
+
+package "Ticketing and Notification" {
+  class Ticket {
+    +id: UUID
+    +ticketCode: String
+    +qrCodeHash: String
+    +issuedAt: DateTime
+    +status: TicketStatus
+    +validate()
+    +cancel()
+  }
+
+  enum TicketStatus {
+    VALID
+    USED
+    CANCELLED
+  }
+
+  class Notification {
+    +id: UUID
+    +type: NotificationType
+    +recipient: String
+    +message: String
+    +status: NotificationStatus
+    +sentAt: DateTime
+    +send()
+  }
+
+  enum NotificationType {
+    SMS
+    EMAIL
+  }
+
+  enum NotificationStatus {
+    PENDING
+    SENT
+    FAILED
+  }
+}
+
+User "1" -- "0..1" OrganizerProfile : has >
+User "1" -- "0..*" Reservation : creates >
+OrganizerProfile "1" -- "0..*" Event : manages >
+
+Venue "1" -- "1..*" Hall : contains >
+Hall "1" -- "1..*" Section : contains >
+Section "1" -- "1..*" Seat : contains >
+
+Event "1" -- "1" Venue : assigned to >
+Event "1" -- "0..*" Reservation : receives >
+
+Reservation "1" -- "1..*" ReservationSeat : includes >
+ReservationSeat "*" -- "1" Seat : locks >
+Reservation "1" -- "0..1" Payment : paid by >
+Reservation "1" -- "0..*" Ticket : generates >
+
+Ticket "*" -- "1" Event : belongs to >
+Ticket "*" -- "1" Seat : represents >
+Ticket "*" -- "1" User : owned by >
+
+Notification "*" -- "1" User : sent to >
+Notification "*" -- "0..1" Ticket : related to >
+
+User --> UserRole
+User --> UserStatus
+Event --> EventStatus
+Seat --> SeatStatus
+Reservation --> ReservationStatus
+Payment --> PaymentStatus
+Ticket --> TicketStatus
+Notification --> NotificationType
+Notification --> NotificationStatus
+
+@enduml

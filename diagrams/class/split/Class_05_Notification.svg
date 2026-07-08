@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="522px" preserveAspectRatio="none" style="width:418px;height:522px;" version="1.1" viewBox="0 0 418 522" width="418px" zoomAndPan="magnify"><defs/><g><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacingAndGlyphs" textLength="322" x="51.5" y="19.2419">Class Diagram 05 - Notification Model</text><!--MD5=[3fd616f346a44cd59a91eb10b19e157c]
+class User--><rect fill="#FEFECE" height="107.9276" id="User" style="stroke: #A80036; stroke-width: 1.5;" width="133" x="274" y="33.0158"/><ellipse cx="322.75" cy="49.0158" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M325.7188,54.6565 Q325.1406,54.9533 324.5,55.094 Q323.8594,55.2502 323.1563,55.2502 Q320.6563,55.2502 319.3281,53.6096 Q318.0156,51.9533 318.0156,48.8283 Q318.0156,45.7033 319.3281,44.0471 Q320.6563,42.3908 323.1563,42.3908 Q323.8594,42.3908 324.5,42.5471 Q325.1563,42.7033 325.7188,43.0002 L325.7188,45.719 Q325.0938,45.1408 324.5,44.8752 Q323.9063,44.594 323.2813,44.594 Q321.9375,44.594 321.25,45.6721 Q320.5625,46.7346 320.5625,48.8283 Q320.5625,50.9221 321.25,52.0002 Q321.9375,53.0627 323.2813,53.0627 Q323.9063,53.0627 324.5,52.7971 Q325.0938,52.5158 325.7188,51.9377 L325.7188,54.6565 Z "/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="27" x="343.25" y="53.6719">User</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="275" x2="406" y1="65.0158" y2="65.0158"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="50" x="280" y="80.7748">+id: UUID</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="91" x="280" y="95.7566">+fullName: String</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="72" x="280" y="110.7385">+email: String</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="121" x="280" y="125.7204">+phoneNumber: String</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="275" x2="406" y1="132.9434" y2="132.9434"/><!--MD5=[ac6bea31e13c94c7baa9ad18feb7405e]
+class Ticket--><rect fill="#FEFECE" height="92.9457" id="Ticket" style="stroke: #A80036; stroke-width: 1.5;" width="121" x="280" y="176.5158"/><ellipse cx="320.2" cy="192.5158" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M323.1688,198.1565 Q322.5906,198.4533 321.95,198.594 Q321.3094,198.7502 320.6063,198.7502 Q318.1063,198.7502 316.7781,197.1096 Q315.4656,195.4533 315.4656,192.3283 Q315.4656,189.2033 316.7781,187.5471 Q318.1063,185.8908 320.6063,185.8908 Q321.3094,185.8908 321.95,186.0471 Q322.6063,186.2033 323.1688,186.5002 L323.1688,189.219 Q322.5438,188.6408 321.95,188.3752 Q321.3563,188.094 320.7313,188.094 Q319.3875,188.094 318.7,189.1721 Q318.0125,190.2346 318.0125,192.3283 Q318.0125,194.4221 318.7,195.5002 Q319.3875,196.5627 320.7313,196.5627 Q321.3563,196.5627 321.95,196.2971 Q322.5438,196.0158 323.1688,195.4377 L323.1688,198.1565 Z "/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="33" x="339.8" y="197.1719">Ticket</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="281" x2="400" y1="208.5158" y2="208.5158"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="50" x="286" y="224.2748">+id: UUID</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="99" x="286" y="239.2566">+ticketCode: String</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="109" x="286" y="254.2385">+qrCodeHash: String</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="281" x2="400" y1="261.4615" y2="261.4615"/><!--MD5=[76b5e19c9337179d2d7ae334371d68c8]
+class Notification--><rect fill="#FEFECE" height="197.8189" id="Notification" style="stroke: #A80036; stroke-width: 1.5;" width="148" x="6" y="185.0158"/><ellipse cx="44.4" cy="201.0158" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M47.3688,206.6565 Q46.7906,206.9533 46.15,207.094 Q45.5094,207.2502 44.8063,207.2502 Q42.3063,207.2502 40.9781,205.6096 Q39.6656,203.9533 39.6656,200.8283 Q39.6656,197.7033 40.9781,196.0471 Q42.3063,194.3908 44.8063,194.3908 Q45.5094,194.3908 46.15,194.5471 Q46.8063,194.7033 47.3688,195.0002 L47.3688,197.719 Q46.7438,197.1408 46.15,196.8752 Q45.5563,196.594 44.9313,196.594 Q43.5875,196.594 42.9,197.6721 Q42.2125,198.7346 42.2125,200.8283 Q42.2125,202.9221 42.9,204.0002 Q43.5875,205.0627 44.9313,205.0627 Q45.5563,205.0627 46.15,204.7971 Q46.7438,204.5158 47.3688,203.9377 L47.3688,206.6565 Z "/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="64" x="63.6" y="205.6719">Notification</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="7" x2="153" y1="217.0158" y2="217.0158"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="50" x="12" y="232.7748">+id: UUID</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="121" x="12" y="247.7566">+type: NotificationType</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="90" x="12" y="262.7385">+recipient: String</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="81" x="12" y="277.7204">+subject: String</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="89" x="12" y="292.7023">+message: String</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="136" x="12" y="307.6842">+status: NotificationStatus</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="94" x="12" y="322.6661">+sentAt: DateTime</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="7" x2="153" y1="329.8891" y2="329.8891"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="37" x="12" y="345.648">+send()</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="38" x="12" y="360.6299">+retry()</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="82" x="12" y="375.6117">+markAsFailed()</text><!--MD5=[f7cfd16e4193b177764fb7ce127a666a]
+class NotificationType--><rect fill="#FEFECE" height="77.9638" id="NotificationType" style="stroke: #A80036; stroke-width: 1.5;" width="123" x="279" y="305.0158"/><ellipse cx="294" cy="321.0158" fill="#EB937F" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M298.1094,327.0158 L290.3906,327.0158 L290.3906,314.6252 L298.1094,314.6252 L298.1094,316.7815 L292.8438,316.7815 L292.8438,319.4533 L297.6094,319.4533 L297.6094,321.6096 L292.8438,321.6096 L292.8438,324.8596 L298.1094,324.8596 L298.1094,327.0158 Z "/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="91" x="308" y="325.6719">NotificationType</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="280" x2="401" y1="337.0158" y2="337.0158"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="22" x="285" y="352.7748">SMS</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="33" x="285" y="367.7566">EMAIL</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="280" x2="401" y1="374.9796" y2="374.9796"/><!--MD5=[489b2a919516f920d97168bac890db56]
+class NotificationStatus--><rect fill="#FEFECE" height="92.9457" id="NotificationStatus" style="stroke: #A80036; stroke-width: 1.5;" width="131" x="275" y="418.5158"/><ellipse cx="290" cy="434.5158" fill="#EB937F" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M294.1094,440.5158 L286.3906,440.5158 L286.3906,428.1252 L294.1094,428.1252 L294.1094,430.2815 L288.8438,430.2815 L288.8438,432.9533 L293.6094,432.9533 L293.6094,435.1096 L288.8438,435.1096 L288.8438,438.3596 L294.1094,438.3596 L294.1094,440.5158 Z "/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="99" x="304" y="439.1719">NotificationStatus</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="276" x2="405" y1="450.5158" y2="450.5158"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="49" x="281" y="466.2748">PENDING</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="26" x="281" y="481.2566">SENT</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="37" x="281" y="496.2385">FAILED</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="276" x2="405" y1="503.4615" y2="503.4615"/><!--MD5=[74550f1b7b913e7c2cc32ee3f522efbf]
+link Notification to User--><path d="M154.04,228.3558 C191.66,199.6858 237.18,164.9958 273.7,137.1558 " fill="none" id="Notification-User" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="42" x="193" y="158.9129">sent to</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="7" x="162.0363" y="237.4352">*</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="7" x="259.0109" y="157.5092">1</text><!--MD5=[ecf7bc82672e20aa42dd37b804edc2db]
+link Notification to Ticket--><path d="M154.04,266.7758 C193.75,257.4058 242.26,245.9658 279.7,237.1258 " fill="none" id="Notification-Ticket" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="58" x="185" y="242.9129">related to</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="7" x="162.0363" y="279.8173">*</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="20" x="251.9562" y="253.5374">0..1</text><!--MD5=[ca215bcb9a7c7e2da543f7a6a0726af3]
+link Notification to NotificationType--><path d="M154.04,300.9658 C191.61,309.6858 237.04,320.2358 273.54,328.7058 " fill="none" id="Notification-&gt;NotificationType" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="278.86,329.9358,270.995,324.0078,273.989,328.8074,269.1894,331.8014,278.86,329.9358" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[082717fad4a7bdad1e04ffc2e193ac26]
+link Notification to NotificationStatus--><path d="M154.04,335.1558 C190.48,360.6758 234.32,391.3758 270.23,416.5158 " fill="none" id="Notification-&gt;NotificationStatus" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="274.57,419.5558,269.5066,411.1082,270.4792,416.6809,264.9066,417.6535,274.57,419.5558" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[cc17e5138148d3d84a578434ba430b0a]
+@startuml
+title Class Diagram 05 - Notification Model
+
+left to right direction
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+class User {
+  +id: UUID
+  +fullName: String
+  +email: String
+  +phoneNumber: String
+}
+
+class Ticket {
+  +id: UUID
+  +ticketCode: String
+  +qrCodeHash: String
+}
+
+class Notification {
+  +id: UUID
+  +type: NotificationType
+  +recipient: String
+  +subject: String
+  +message: String
+  +status: NotificationStatus
+  +sentAt: DateTime
+
+  +send()
+  +retry()
+  +markAsFailed()
+}
+
+enum NotificationType {
+  SMS
+  EMAIL
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+Notification "*" - - "1" User : sent to
+Notification "*" - - "0..1" Ticket : related to
+
+Notification - -> NotificationType
+Notification - -> NotificationStatus
+
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 14:52:07 AFT 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 21.0.10+7-Ubuntu-124.04
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

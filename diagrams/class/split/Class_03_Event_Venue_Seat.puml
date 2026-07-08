@@ -1,0 +1,77 @@
+@startuml
+title Class Diagram 03 - Event, Venue and Seat Model
+
+left to right direction
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+class Event {
+  +id: UUID
+  +title: String
+  +description: String
+  +category: String
+  +startTime: DateTime
+  +endTime: DateTime
+  +status: EventStatus
+  +basePrice: Decimal
+
+  +publish()
+  +updateDetails()
+  +cancel()
+}
+
+class Venue {
+  +id: UUID
+  +name: String
+  +city: String
+  +address: String
+  +totalCapacity: Integer
+}
+
+class Hall {
+  +id: UUID
+  +name: String
+  +capacity: Integer
+}
+
+class Section {
+  +id: UUID
+  +name: String
+  +priceCategory: String
+}
+
+class Seat {
+  +id: UUID
+  +rowNumber: String
+  +seatNumber: String
+  +xCoordinate: Integer
+  +yCoordinate: Integer
+  +status: SeatStatus
+
+  +markAvailable()
+  +markLocked()
+  +markBooked()
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+enum SeatStatus {
+  AVAILABLE
+  LOCKED
+  BOOKED
+}
+
+Venue "1" -- "1..*" Hall : contains
+Hall "1" -- "1..*" Section : contains
+Section "1" -- "1..*" Seat : contains
+Event "1" -- "1" Venue : assigned to
+
+Event --> EventStatus
+Seat --> SeatStatus
+
+@enduml
