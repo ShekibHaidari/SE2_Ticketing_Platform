@@ -1,0 +1,42 @@
+@startuml
+title Activity Diagram 03 - Reservation Timeout and Rollback
+
+start
+
+:User selects seat;
+:System creates temporary seat lock;
+:System creates pending reservation;
+:Start reservation countdown timer;
+
+while (Reservation time remaining?) is (Yes)
+  if (User completes payment?) then (Yes)
+    :Verify payment status;
+
+    if (Payment successful?) then (Yes)
+      :Confirm reservation;
+      :Mark seat as booked;
+      :Generate ticket with QR Code;
+      :Send confirmation notification;
+      stop
+    else (No)
+      :Mark payment as failed;
+      :Cancel reservation;
+      :Release seat lock;
+      :Show payment failed message;
+      stop
+    endif
+
+  else (No)
+    :Wait for user action;
+  endif
+endwhile (No)
+
+:Reservation TTL expired;
+:Mark reservation as expired;
+:Release seat lock in Redis;
+:Make seat available again;
+:Notify user about timeout;
+
+stop
+
+@enduml
