@@ -1,0 +1,34 @@
+@startuml
+title Sequence Diagram 05 - Payment Failure or Timeout Rollback
+
+actor "Customer" as Customer
+participant "Web / Mobile Client" as Client
+participant "Payment Service" as Payment
+participant "Reservation Service" as Reservation
+database "Redis" as Redis
+database "PostgreSQL" as DB
+queue "Message Broker" as Broker
+
+Customer -> Client: Start checkout but payment fails or times out
+
+alt Payment failed
+    Payment -> DB: Update payment status to FAILED
+    DB --> Payment: Payment updated
+    Payment -> Reservation: Cancel reservation
+    Reservation -> Redis: Delete seat lock key
+    Redis --> Reservation: Lock removed
+    Reservation -> DB: Update reservation to CANCELLED
+    DB --> Reservation: Reservation cancelled
+    Reservation -> Broker: Publish ReservationCancelled event
+else Reservation TTL expired
+    Reservation -> Redis: Seat lock expires automatically
+    Redis --> Reservation: Lock removed by TTL
+    Reservation -> DB: Update reservation to EXPIRED
+    DB --> Reservation: Reservation expired
+    Reservation -> Broker: Publish ReservationExpired event
+end
+
+Reservation --> Client: Seat released
+Client --> Customer: Show failure or timeout message
+
+@enduml

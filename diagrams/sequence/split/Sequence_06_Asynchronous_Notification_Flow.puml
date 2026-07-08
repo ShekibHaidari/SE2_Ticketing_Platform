@@ -1,0 +1,34 @@
+@startuml
+title Sequence Diagram 06 - Asynchronous Notification Flow
+
+actor "Customer" as Customer
+participant "Ticket Service" as Ticket
+queue "Message Broker\nRabbitMQ / Kafka" as Broker
+participant "Notification Service" as Notification
+participant "SMS Provider" as SmsProvider
+participant "Email Provider" as EmailProvider
+database "PostgreSQL" as DB
+
+Ticket -> Broker: Publish TicketIssued event
+Broker -> Notification: Deliver TicketIssued event
+
+Notification -> DB: Save notification with PENDING status
+DB --> Notification: Notification saved
+
+Notification -> SmsProvider: Send SMS confirmation
+SmsProvider --> Notification: SMS delivery result
+
+Notification -> EmailProvider: Send email with ticket
+EmailProvider --> Notification: Email delivery result
+
+alt SMS and Email sent successfully
+    Notification -> DB: Update notification status to SENT
+    DB --> Notification: Status updated
+    Notification --> Customer: Receive SMS / Email confirmation
+else Notification failed
+    Notification -> DB: Update notification status to FAILED
+    DB --> Notification: Status updated
+    Notification -> Broker: Publish NotificationRetryRequested event
+end
+
+@enduml
