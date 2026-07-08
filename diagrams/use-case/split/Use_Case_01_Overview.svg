@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="613px" preserveAspectRatio="none" style="width:522px;height:613px;" version="1.1" viewBox="0 0 522 613" width="522px" zoomAndPan="magnify"><defs/><g><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacingAndGlyphs" textLength="341" x="102" y="19.2419">Use Case Diagram 01 - System Overview</text><!--MD5=[18d1254a18e9c56057e134edabc7ee90]
+cluster End-to-End Event Ticketing Platform--><rect fill="#FFFFFF" height="441" style="stroke: #000000; stroke-width: 1.5;" width="269" x="242" y="49.0158"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="253" x="250" y="65.9818">End-to-End Event Ticketing Platform</text><ellipse cx="375.913" cy="173.1985" fill="#FEFECE" rx="73.913" ry="17.1826" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="105" x="323.413" y="179.2324">Discover Events</text><ellipse cx="376.033" cy="103.9989" fill="#FEFECE" rx="56.033" ry="16.4831" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="75" x="338.533" y="110.0329">Book Ticket</text><ellipse cx="376.1759" cy="242.051" fill="#FEFECE" rx="73.1759" ry="17.0352" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="103" x="324.6759" y="248.085">Manage Events</text><ellipse cx="376.076" cy="312.0311" fill="#FEFECE" rx="78.076" ry="18.0152" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="116" x="318.076" y="318.065">Manage Platform</text><ellipse cx="375.9233" cy="382.8005" fill="#FEFECE" rx="76.9233" ry="17.7847" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="113" x="319.4233" y="388.8345">Process Payment</text><ellipse cx="375.8117" cy="455.0782" fill="#FEFECE" rx="80.8117" ry="18.5623" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="123" x="314.3117" y="461.1121">Send Notifications</text><!--MD5=[ae78ca0dd1f49bdd788e5556d70823ac]
+entity Customer--><ellipse cx="71.5" cy="69.0158" fill="#FEFECE" rx="8" ry="8" style="stroke: #A80036; stroke-width: 1.5;"/><path d="M71.5,77.0158 L71.5,104.0158 M58.5,85.0158 L84.5,85.0158 M71.5,104.0158 L58.5,119.0158 M71.5,104.0158 L84.5,119.0158 " fill="none" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="117" x="13" y="136.4818">Customer / Buyer</text><!--MD5=[585b962675771cf7d6aded088b9190a1]
+entity Organizer--><ellipse cx="71.5" cy="185.0158" fill="#FEFECE" rx="8" ry="8" style="stroke: #A80036; stroke-width: 1.5;"/><path d="M71.5,193.0158 L71.5,220.0158 M58.5,201.0158 L84.5,201.0158 M71.5,220.0158 L58.5,235.0158 M71.5,220.0158 L84.5,235.0158 " fill="none" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="109" x="17" y="252.4818">Event Organizer</text><!--MD5=[97ab183161fd5d1db7fba7485cf76add]
+entity Admin--><ellipse cx="71.5" cy="301.0158" fill="#FEFECE" rx="8" ry="8" style="stroke: #A80036; stroke-width: 1.5;"/><path d="M71.5,309.0158 L71.5,336.0158 M58.5,317.0158 L84.5,317.0158 M71.5,336.0158 L58.5,351.0158 M71.5,336.0158 L84.5,351.0158 " fill="none" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="96" x="23.5" y="368.4818">System Admin</text><!--MD5=[72a9586c6036bc828fb9ec987b717d65]
+entity PaymentGateway--><ellipse cx="71.5" cy="417.0158" fill="#FEFECE" rx="8" ry="8" style="stroke: #A80036; stroke-width: 1.5;"/><path d="M71.5,425.0158 L71.5,452.0158 M58.5,433.0158 L84.5,433.0158 M71.5,452.0158 L58.5,467.0158 M71.5,452.0158 L84.5,467.0158 " fill="none" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="119" x="12" y="484.4818">Payment Gateway</text><!--MD5=[fe040a3626c23dd0a6633f9d8a7d8659]
+entity SmsEmail--><ellipse cx="71.5" cy="533.0158" fill="#FEFECE" rx="8" ry="8" style="stroke: #A80036; stroke-width: 1.5;"/><path d="M71.5,541.0158 L71.5,568.0158 M58.5,549.0158 L84.5,549.0158 M71.5,568.0158 L58.5,583.0158 M71.5,568.0158 L84.5,583.0158 " fill="none" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="131" x="6" y="600.4818">SMS / Email Service</text><!--MD5=[0b9b4cb9632f3c8091570dfe33569dcb]
+link Customer to UC_Discover--><path d="M130.11,113.9158 C184.41,127.0258 265.27,146.5358 319.03,159.5058 " fill="none" id="Customer-&gt;UC_Discover" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="324.14,160.7458,316.3247,154.7525,319.2786,159.5768,314.4542,162.5307,324.14,160.7458" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[a099557bb244cf9e39ffd019556f2c26]
+link Customer to UC_Book--><path d="M130.11,100.7758 C183,101.4758 261.08,102.5058 314.78,103.2158 " fill="none" id="Customer-&gt;UC_Book" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="319.9,103.2858,310.9463,99.1833,314.9003,103.2287,310.8549,107.1827,319.9,103.2858" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[1009c7f6f0e654a16b4ab471e35ba17c]
+link Organizer to UC_ManageEvents--><path d="M126.23,220.6358 C175.16,224.8358 247.83,231.0858 302.01,235.7458 " fill="none" id="Organizer-&gt;UC_ManageEvents" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="307.19,236.1858,298.5656,231.4297,302.2084,235.7576,297.8805,239.4004,307.19,236.1858" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[e347264f06318ecea2486fb7a1eca777]
+link Admin to UC_ManagePlatform--><path d="M119.77,328.8958 C166.78,325.7858 239.79,320.9558 295.7,317.2558 " fill="none" id="Admin-&gt;UC_ManagePlatform" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="300.71,316.9258,291.4664,313.5263,295.7208,317.2546,291.9925,321.509,300.71,316.9258" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[3c022d2b07fa39afc30380140f6a5b39]
+link PaymentGateway to UC_Payment--><path d="M131.18,435.4058 C183.7,424.1258 260.4,407.6358 313.7,396.1858 " fill="none" id="PaymentGateway-&gt;UC_Payment" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="318.78,395.0958,309.1376,393.0896,313.8931,396.1532,310.8295,400.9087,318.78,395.0958" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[c742cfd58baec216be7194c21de074ec]
+link SmsEmail to UC_Notification--><path d="M137.02,540.7658 C193.84,520.2958 275.32,490.9358 326.67,472.4258 " fill="none" id="SmsEmail-&gt;UC_Notification" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="331.55,470.6758,321.7261,469.9756,326.8481,472.3765,324.4472,477.4986,331.55,470.6758" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[09cda87011739e1bcb92b80a7db79780]
+link UC_Book to UC_Payment--><path d="M320.08,105.2158 C291.3,108.6058 257.42,117.2458 234,138.0158 C230.01,141.5458 185.99,211.3458 196,259.5158 C204.62,301.0258 201.7,319.5458 234,347.0158 C251.74,362.1058 274.96,371.0058 297.47,376.2158 " fill="none" id="UC_Book-&gt;UC_Payment" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#A80036" points="302.56,377.3358,294.6257,371.5008,297.6761,376.2648,292.9121,379.3151,302.56,377.3358" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="57" x="168" y="255.4129">«include»</text><!--MD5=[e858cb99af538c35d04a34057ae13d42]
+link UC_Book to UC_Notification--><path d="M319.9,104.5958 C290.88,107.7758 256.85,116.4258 234,138.0158 C191.33,178.3258 204.54,206.4358 196,264.5158 C185.78,334.0458 183.8,368.8258 234,418.0158 C249.99,433.6758 271.73,442.9458 293.38,448.3658 " fill="none" id="UC_Book-&gt;UC_Notification" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#A80036" points="298.3,449.5358,290.4515,443.586,293.4322,448.3938,288.6243,451.3745,298.3,449.5358" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="57" x="168" y="279.4129">«include»</text><!--MD5=[e5a1a2f5e2a9994852d041923bfe1c27]
+link UC_ManageEvents to UC_Notification--><path d="M302.95,240.3158 C264.42,243.7358 220.31,255.4758 196.5,288.5158 C161.46,337.1258 190.13,377.2058 234,418.0158 C250.47,433.3358 272.48,442.4958 294.25,447.9158 " fill="none" id="UC_ManageEvents-&gt;UC_Notification" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#A80036" points="299.18,449.0758,291.3481,443.1042,294.3154,447.9203,289.4992,450.8876,299.18,449.0758" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="56" x="168.5" y="303.4129">«extend»</text><!--MD5=[1f550c8848088e78f1c59c8276baca54]
+@startuml
+title Use Case Diagram 01 - System Overview
+
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+actor "Customer / Buyer" as Customer
+actor "Event Organizer" as Organizer
+actor "System Admin" as Admin
+actor "Payment Gateway" as PaymentGateway
+actor "SMS / Email Service" as SmsEmail
+
+rectangle "End-to-End Event Ticketing Platform" {
+  usecase "Discover Events" as UC_Discover
+  usecase "Book Ticket" as UC_Book
+  usecase "Manage Events" as UC_ManageEvents
+  usecase "Manage Platform" as UC_ManagePlatform
+  usecase "Process Payment" as UC_Payment
+  usecase "Send Notifications" as UC_Notification
+}
+
+Customer - -> UC_Discover
+Customer - -> UC_Book
+
+Organizer - -> UC_ManageEvents
+
+Admin - -> UC_ManagePlatform
+
+PaymentGateway - -> UC_Payment
+SmsEmail - -> UC_Notification
+
+UC_Book .> UC_Payment : <<include>>
+UC_Book .> UC_Notification : <<include>>
+UC_ManageEvents .> UC_Notification : <<extend>>
+
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 14:52:07 AFT 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 21.0.10+7-Ubuntu-124.04
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

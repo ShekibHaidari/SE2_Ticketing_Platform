@@ -1,0 +1,50 @@
+@startuml
+title Use Case Diagram 02 - Customer Booking Workflow
+
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+actor "Customer / Buyer" as Customer
+actor "Payment Gateway" as PaymentGateway
+actor "SMS / Email Service" as SmsEmail
+
+rectangle "Customer Booking Module" {
+  usecase "Register / Login" as Login
+  usecase "Search and Filter Events" as Search
+  usecase "Join Virtual Waiting Room" as WaitingRoom
+  usecase "View Event Details" as Details
+  usecase "View Venue Seat Map" as SeatMap
+  usecase "Select Seat" as SelectSeat
+  usecase "Lock Seat Temporarily" as LockSeat
+  usecase "Checkout" as Checkout
+  usecase "Process Payment" as Payment
+  usecase "Verify Payment" as Verify
+  usecase "Generate Ticket with QR Code" as Ticket
+  usecase "Release Seat Lock" as ReleaseLock
+  usecase "Receive Ticket Notification" as Notification
+  usecase "View My Tickets" as MyTickets
+}
+
+Customer --> Login
+Customer --> Search
+Customer --> Details
+Customer --> SeatMap
+Customer --> SelectSeat
+Customer --> Checkout
+Customer --> MyTickets
+
+PaymentGateway --> Payment
+PaymentGateway --> Verify
+
+SmsEmail --> Notification
+
+WaitingRoom .> Search : <<extend>>\n[high traffic]
+SelectSeat .> LockSeat : <<include>>
+Checkout .> Payment : <<include>>
+Payment .> Verify : <<include>>
+Ticket .> Checkout : <<extend>>\n[payment success]
+ReleaseLock .> LockSeat : <<extend>>\n[timeout or cancel]
+Notification .> Ticket : <<extend>>
+
+@enduml

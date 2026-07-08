@@ -1,0 +1,37 @@
+@startuml
+title Use Case Diagram 01 - System Overview
+
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+actor "Customer / Buyer" as Customer
+actor "Event Organizer" as Organizer
+actor "System Admin" as Admin
+actor "Payment Gateway" as PaymentGateway
+actor "SMS / Email Service" as SmsEmail
+
+rectangle "End-to-End Event Ticketing Platform" {
+  usecase "Discover Events" as UC_Discover
+  usecase "Book Ticket" as UC_Book
+  usecase "Manage Events" as UC_ManageEvents
+  usecase "Manage Platform" as UC_ManagePlatform
+  usecase "Process Payment" as UC_Payment
+  usecase "Send Notifications" as UC_Notification
+}
+
+Customer --> UC_Discover
+Customer --> UC_Book
+
+Organizer --> UC_ManageEvents
+
+Admin --> UC_ManagePlatform
+
+PaymentGateway --> UC_Payment
+SmsEmail --> UC_Notification
+
+UC_Book .> UC_Payment : <<include>>
+UC_Book .> UC_Notification : <<include>>
+UC_ManageEvents .> UC_Notification : <<extend>>
+
+@enduml
