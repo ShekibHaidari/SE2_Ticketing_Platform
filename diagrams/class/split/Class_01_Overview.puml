@@ -1,0 +1,77 @@
+@startuml
+title Class Diagram 01 - Core Domain Overview
+
+left to right direction
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+class User {
+  +id: UUID
+  +fullName: String
+  +email: String
+  +role: UserRole
+}
+
+class OrganizerProfile {
+  +id: UUID
+  +companyName: String
+  +isVerified: Boolean
+}
+
+class Event {
+  +id: UUID
+  +title: String
+  +startTime: DateTime
+  +status: EventStatus
+}
+
+class Venue {
+  +id: UUID
+  +name: String
+  +city: String
+}
+
+class Seat {
+  +id: UUID
+  +rowNumber: String
+  +seatNumber: String
+  +status: SeatStatus
+}
+
+class Reservation {
+  +id: UUID
+  +status: ReservationStatus
+  +expiresAt: DateTime
+}
+
+class Payment {
+  +id: UUID
+  +amount: Decimal
+  +status: PaymentStatus
+}
+
+class Ticket {
+  +id: UUID
+  +ticketCode: String
+  +qrCodeHash: String
+}
+
+class Notification {
+  +id: UUID
+  +type: NotificationType
+  +status: NotificationStatus
+}
+
+User "1" -- "0..1" OrganizerProfile : has
+OrganizerProfile "1" -- "0..*" Event : manages
+Event "1" -- "1" Venue : assigned to
+Venue "1" -- "1..*" Seat : contains
+User "1" -- "0..*" Reservation : creates
+Reservation "1" -- "1..*" Seat : locks
+Reservation "1" -- "0..1" Payment : paid by
+Reservation "1" -- "0..*" Ticket : generates
+Ticket "*" -- "1" User : owned by
+Notification "*" -- "1" User : sent to
+
+@enduml

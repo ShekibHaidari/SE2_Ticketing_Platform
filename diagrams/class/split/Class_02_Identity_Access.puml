@@ -1,0 +1,59 @@
+@startuml
+title Class Diagram 02 - Identity and Access
+
+left to right direction
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+class User {
+  +id: UUID
+  +fullName: String
+  +email: String
+  +phoneNumber: String
+  +passwordHash: String
+  +role: UserRole
+  +status: UserStatus
+  +createdAt: DateTime
+
+  +login()
+  +logout()
+  +updateProfile()
+}
+
+class OrganizerProfile {
+  +id: UUID
+  +companyName: String
+  +businessEmail: String
+  +isVerified: Boolean
+  +verifiedAt: DateTime
+
+  +createEvent()
+  +viewDashboard()
+}
+
+class AdminActionLog {
+  +id: UUID
+  +actionType: String
+  +description: String
+  +createdAt: DateTime
+}
+
+enum UserRole {
+  CUSTOMER
+  ORGANIZER
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+User "1" -- "0..1" OrganizerProfile : has
+User "1" -- "0..*" AdminActionLog : performs
+
+User --> UserRole
+User --> UserStatus
+
+@enduml
