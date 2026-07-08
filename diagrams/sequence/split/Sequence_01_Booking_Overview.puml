@@ -1,0 +1,33 @@
+@startuml
+title Sequence Diagram 01 - Booking Overview
+
+actor "Customer" as Customer
+participant "Web / Mobile Client" as Client
+participant "API Gateway" as Gateway
+participant "Event Catalog Service" as Catalog
+participant "Reservation Service" as Reservation
+participant "Payment Service" as Payment
+participant "Ticket Service" as Ticket
+participant "Notification Service" as Notification
+
+Customer -> Client: Search event and select seat
+Client -> Gateway: Send booking request
+Gateway -> Catalog: Get event and seat information
+Catalog --> Gateway: Return event details
+
+Gateway -> Reservation: Create temporary reservation
+Reservation --> Gateway: Reservation created
+
+Gateway -> Payment: Start checkout process
+Payment --> Gateway: Payment session created
+
+Gateway -> Ticket: Generate ticket after payment success
+Ticket --> Gateway: Ticket generated
+
+Gateway -> Notification: Send confirmation notification
+Notification --> Gateway: Notification queued
+
+Gateway --> Client: Show booking result
+Client --> Customer: Display ticket information
+
+@enduml
