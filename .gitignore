@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+.DS_Store
+.vscode/
+*.log
+coverage/
+__pycache__/
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+final-submission/*.zip
