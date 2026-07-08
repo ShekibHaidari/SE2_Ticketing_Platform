@@ -1,0 +1,644 @@
+openapi: 3.0.3
+info:
+  title: Event Ticketing Platform API
+  version: 1.0.0
+  description: >
+    Lightweight course-project API contract for an end-to-end event ticketing
+    platform designed for scalability, reliability, and concurrency safety.
+servers:
+  - url: http://localhost:3000/api
+tags:
+  - name: Auth
+  - name: Events
+  - name: Venues
+  - name: Waiting Room
+  - name: Reservations
+  - name: Checkout
+  - name: Tickets
+  - name: Notifications
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new customer account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /events:
+    get:
+      tags: [Events]
+      summary: List discoverable events
+      parameters:
+        - in: query
+          name: category
+          schema: { type: string }
+        - in: query
+          name: city
+          schema: { type: string }
+        - in: query
+          name: date
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Event list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+    post:
+      tags: [Events]
+      summary: Create an event draft
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventCreateRequest'
+      responses:
+        '201':
+          description: Event created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+  /events/{eventId}:
+    get:
+      tags: [Events]
+      summary: Get event details
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: Event details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+    put:
+      tags: [Events]
+      summary: Update an event draft
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventCreateRequest'
+      responses:
+        '200':
+          description: Event updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+  /events/{eventId}/publish:
+    post:
+      tags: [Events]
+      summary: Publish an event
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: Event published
+  /venues:
+    get:
+      tags: [Venues]
+      summary: List venues
+      responses:
+        '200':
+          description: Venue list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Venue'
+    post:
+      tags: [Venues]
+      summary: Create a venue
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VenueCreateRequest'
+      responses:
+        '201':
+          description: Venue created
+  /venues/{venueId}/seat-map:
+    get:
+      tags: [Venues]
+      summary: Get seat map for a venue
+      parameters:
+        - $ref: '#/components/parameters/VenueId'
+      responses:
+        '200':
+          description: Seat map response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeatMap'
+  /waiting-room/join:
+    post:
+      tags: [Waiting Room]
+      summary: Join the virtual waiting room
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaitingRoomJoinRequest'
+      responses:
+        '202':
+          description: Queue token issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaitingRoomStatus'
+  /waiting-room/status:
+    get:
+      tags: [Waiting Room]
+      summary: Check waiting-room status
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Current queue position and admission state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaitingRoomStatus'
+  /reservations/lock-seat:
+    post:
+      tags: [Reservations]
+      summary: Lock one or more seats temporarily
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LockSeatRequest'
+      responses:
+        '201':
+          description: Seat lock created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '409':
+          description: One or more seats are no longer available
+  /reservations/{reservationId}/cancel:
+    post:
+      tags: [Reservations]
+      summary: Cancel an active reservation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ReservationId'
+      responses:
+        '200':
+          description: Reservation cancelled
+  /reservations/{reservationId}:
+    get:
+      tags: [Reservations]
+      summary: Get reservation details
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ReservationId'
+      responses:
+        '200':
+          description: Reservation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+  /checkout:
+    post:
+      tags: [Checkout]
+      summary: Start checkout for a reservation
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+      responses:
+        '201':
+          description: Payment intent created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+  /payments/callback:
+    post:
+      tags: [Checkout]
+      summary: Receive payment gateway callback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentCallbackRequest'
+      responses:
+        '202':
+          description: Callback accepted
+  /payments/{paymentId}:
+    get:
+      tags: [Checkout]
+      summary: Get payment status
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PaymentId'
+      responses:
+        '200':
+          description: Payment details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+  /tickets/my:
+    get:
+      tags: [Tickets]
+      summary: List tickets for the authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User tickets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ticket'
+  /tickets/{ticketId}:
+    get:
+      tags: [Tickets]
+      summary: Get ticket details
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TicketId'
+      responses:
+        '200':
+          description: Ticket details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+  /tickets/{ticketId}/validate:
+    post:
+      tags: [Tickets]
+      summary: Validate a ticket at entry
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TicketId'
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                  ticketStatus:
+                    type: string
+  /notifications/my:
+    get:
+      tags: [Notifications]
+      summary: List notifications for the current user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Notification list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    EventId:
+      in: path
+      name: eventId
+      required: true
+      schema:
+        type: integer
+        format: int64
+    VenueId:
+      in: path
+      name: venueId
+      required: true
+      schema:
+        type: integer
+        format: int64
+    ReservationId:
+      in: path
+      name: reservationId
+      required: true
+      schema:
+        type: integer
+        format: int64
+    PaymentId:
+      in: path
+      name: paymentId
+      required: true
+      schema:
+        type: integer
+        format: int64
+    TicketId:
+      in: path
+      name: ticketId
+      required: true
+      schema:
+        type: integer
+        format: int64
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [fullName, email, password]
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        fullName:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        category:
+          type: string
+        city:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        publishStatus:
+          type: string
+    EventCreateRequest:
+      type: object
+      required: [title, category, hallId, startTime, endTime]
+      properties:
+        title:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        hallId:
+          type: integer
+          format: int64
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+    Venue:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        city:
+          type: string
+    VenueCreateRequest:
+      type: object
+      required: [name, city, addressLine]
+      properties:
+        name:
+          type: string
+        city:
+          type: string
+        addressLine:
+          type: string
+    SeatMap:
+      type: object
+      properties:
+        venueId:
+          type: integer
+          format: int64
+        halls:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                format: int64
+              name:
+                type: string
+    WaitingRoomJoinRequest:
+      type: object
+      required: [eventId]
+      properties:
+        eventId:
+          type: integer
+          format: int64
+    WaitingRoomStatus:
+      type: object
+      properties:
+        token:
+          type: string
+        status:
+          type: string
+        queuePosition:
+          type: integer
+        estimatedWaitSeconds:
+          type: integer
+    LockSeatRequest:
+      type: object
+      required: [eventId, seatIds]
+      properties:
+        eventId:
+          type: integer
+          format: int64
+        seatIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        reservationCode:
+          type: string
+        reservationStatus:
+          type: string
+        lockedUntil:
+          type: string
+          format: date-time
+        totalAmount:
+          type: number
+          format: double
+    CheckoutRequest:
+      type: object
+      required: [reservationId, paymentProvider]
+      properties:
+        reservationId:
+          type: integer
+          format: int64
+        paymentProvider:
+          type: string
+    PaymentCallbackRequest:
+      type: object
+      required: [providerReference, paymentStatus]
+      properties:
+        providerReference:
+          type: string
+        paymentStatus:
+          type: string
+        signature:
+          type: string
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        providerReference:
+          type: string
+        paymentStatus:
+          type: string
+        amount:
+          type: number
+          format: double
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        ticketNumber:
+          type: string
+        qrHash:
+          type: string
+        ticketStatus:
+          type: string
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        channel:
+          type: string
+        deliveryStatus:
+          type: string
+        createdAt:
+          type: string
+          format: date-time

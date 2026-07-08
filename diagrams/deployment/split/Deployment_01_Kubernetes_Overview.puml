@@ -1,0 +1,85 @@
+@startuml
+title Deployment Diagram 01 - Kubernetes Production Overview
+
+left to right direction
+skinparam shadowing false
+skinparam componentStyle rectangle
+
+actor "Customer / Buyer" as Customer
+actor "Event Organizer" as Organizer
+actor "System Admin" as Admin
+
+cloud "Internet" as Internet
+node "Cloud Load Balancer" as LB
+node "Kubernetes Cluster" as K8s {
+
+  node "Ingress Controller" as Ingress
+
+  node "Application Namespace" as AppNS {
+    node "API Gateway Pod(s)" as Gateway
+    node "Identity Service Pod(s)" as Identity
+    node "Event Catalog Service Pod(s)" as Catalog
+    node "Waiting Room Service Pod(s)" as WaitingRoom
+    node "Reservation Service Pod(s)" as Reservation
+    node "Payment Service Pod(s)" as Payment
+    node "Ticket Service Pod(s)" as Ticket
+    node "Notification Service Pod(s)" as Notification
+    node "Analytics Service Pod(s)" as Analytics
+  }
+
+  node "Autoscaling" as Autoscaling {
+    component "Horizontal Pod Autoscaler" as HPA
+    component "Cluster Autoscaler" as CA
+  }
+}
+
+database "Managed PostgreSQL" as Postgres
+database "Managed Redis" as Redis
+queue "Managed Message Broker\nRabbitMQ / Kafka" as Broker
+
+cloud "External Payment Gateway" as ExternalPayment
+cloud "SMS / Email Provider" as SmsEmail
+
+Customer --> Internet
+Organizer --> Internet
+Admin --> Internet
+
+Internet --> LB
+LB --> Ingress
+Ingress --> Gateway
+
+Gateway --> Identity
+Gateway --> Catalog
+Gateway --> WaitingRoom
+Gateway --> Reservation
+Gateway --> Payment
+Gateway --> Ticket
+Gateway --> Analytics
+
+Identity --> Postgres
+Catalog --> Postgres
+Reservation --> Postgres
+Payment --> Postgres
+Ticket --> Postgres
+Notification --> Postgres
+Analytics --> Postgres
+
+WaitingRoom --> Redis
+Reservation --> Redis
+
+Reservation --> Broker
+Payment --> Broker
+Ticket --> Broker
+Broker --> Notification
+Broker --> Analytics
+
+Payment --> ExternalPayment
+Notification --> SmsEmail
+
+HPA --> Gateway
+HPA --> Reservation
+HPA --> Payment
+HPA --> WaitingRoom
+CA --> K8s
+
+@enduml

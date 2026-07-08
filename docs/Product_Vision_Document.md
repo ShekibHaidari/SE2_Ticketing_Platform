@@ -1,4 +1,3 @@
-cat > docs/Product_Vision_Document.md <<'EOF'
 # Product Vision Document
 
 ## Project Title
@@ -6,146 +5,88 @@ Design and Architecture of an End-to-End Event Ticketing Platform
 
 ## 1. Introduction
 
-This document describes the product vision for an end-to-end event ticketing platform. The purpose of this platform is to provide a reliable, scalable, and user-friendly system for discovering events, selecting seats in real time, reserving seats temporarily, completing secure payments, and receiving final tickets with QR codes.
+This project proposes an end-to-end event ticketing platform that supports event discovery, real-time seat selection, temporary seat reservation, secure payment, ticket delivery, and post-purchase notifications. The platform is designed as a scalable and reliable system that can handle both normal daily traffic and high-demand ticket releases.
 
-The platform is designed for both regular users and event organizers. Users can search for events, view available seats, book tickets, and receive confirmations. Organizers can create and manage events, configure venues, define pricing, and monitor ticket sales.
+The vision of the platform is not only to help customers buy tickets conveniently, but also to help organizers manage events and help administrators maintain fairness, security, and operational stability.
 
-## 2. Product Vision Statement
+## 2. Vision Statement
 
-The vision of this product is to build a modern online ticketing platform that makes the process of buying and managing event tickets fast, fair, secure, and transparent.
+The vision is to build a ticketing platform that makes online event booking fast, fair, secure, and dependable while protecting inventory accuracy under heavy concurrency.
 
-The platform should be able to handle high traffic during popular event sales while preventing double-booking, payment inconsistencies, and system failures. It should also provide a smooth experience for users and useful management tools for organizers and administrators.
+## 3. Problem Statement
 
-## 3. Target Users
+Traditional ticketing systems often face issues such as slow event discovery, poor seat visibility, double-booking, payment uncertainty, and service degradation during peak demand. These problems reduce user trust and can lead to revenue loss for organizers.
 
-### 3.1 Regular Customers
+The proposed system addresses these challenges by combining a decoupled service architecture with strong concurrency controls, asynchronous messaging, and infrastructure patterns that support scalability and reliability.
 
-Regular customers are users who want to discover events and purchase tickets online. They need a simple and fast interface to search events, view seat availability, select seats, pay securely, and receive their tickets.
+## 4. Target Users
 
-Main needs:
-- Search and filter events easily
-- View real-time seat availability
-- Select and reserve seats
-- Complete secure payment
-- Receive ticket with QR code
-- Get SMS or email confirmation
+### 4.1 Customers
 
-### 3.2 Event Organizers
+Customers use the platform to browse events, compare schedules, view seat maps, temporarily lock seats, pay online, and receive digital tickets with QR codes.
 
-Event organizers are responsible for creating and managing events. They need tools to define event details, assign venues, configure seat prices, and track sales performance.
+### 4.2 Event Organizers
 
-Main needs:
-- Create and update events
-- Manage venue layouts
-- Define ticket pricing
-- Track sales and revenue
-- Monitor remaining seat capacity
-- Receive reports and analytics
+Organizers create and publish events, configure venues and pricing, monitor reservations, and review sales performance.
 
-### 3.3 System Administrators
+### 4.3 Administrators
 
-System administrators manage the whole platform. They are responsible for user management, organizer verification, platform monitoring, and system-level configurations.
+Administrators supervise platform health, manage policy enforcement, audit actions, resolve incidents, and support compliance and reporting needs.
 
-Main needs:
-- Manage users and roles
-- Approve or manage organizers
-- Monitor system activity
-- Handle disputes and incidents
-- Manage platform security and availability
+## 5. Product Goals
 
-## 4. Main Product Goals
+| Goal | Description |
+| --- | --- |
+| Seamless event discovery | Users should quickly search and filter events by date, category, location, and availability. |
+| Safe real-time booking | Users should see near real-time seat status and avoid booking conflicts. |
+| Concurrency safety | The architecture must prevent double-booking through locking, validation, and transaction boundaries. |
+| Reliable checkout | Payment completion, failure handling, and rollback must be predictable and auditable. |
+| Scalable operation | The system should remain usable during traffic spikes through waiting-room and queue-based controls. |
+| Maintainable design | Services should be decoupled so they can evolve, scale, and fail independently. |
 
-### 4.1 Seamless Event Discovery and Booking
+## 6. Core Features
 
-The platform should allow users to browse, search, and filter events by title, category, date, location, and availability. The booking process should be clear and simple from event selection to final ticket issuance.
+- User registration, login, and role-based access control
+- Event catalog with search and filtering
+- Venue, hall, section, and seat modeling
+- Real-time seat map display
+- Temporary seat locking with expiry
+- Reservation creation and cancellation
+- Payment processing callback flow
+- Ticket issuance with QR code
+- Email and SMS notifications
+- Virtual waiting room for high-demand events
+- Administrative audit logging
+- Analytics and reporting support
 
-### 4.2 Real-Time Seat Selection
+## 7. Business Value
 
-Users should be able to view venue layouts and select available seats in real time. The seat map should clearly show available, locked, and booked seats.
+The platform creates value by improving the customer booking experience, reducing inventory conflicts, increasing organizer visibility into sales, and making platform operations more observable. By preventing overselling and handling failures in a structured way, the system also improves trust between customers, organizers, and the platform provider.
 
-### 4.3 Prevention of Double-Booking
+## 8. Success Criteria
 
-One of the most important goals of the system is to prevent two users from booking the same seat at the same time. To achieve this, the system will use a temporary seat locking mechanism, mainly supported by Redis.
+The project will be considered successful if it demonstrates:
 
-### 4.4 Reliable Payment and Ticket Issuance
+- Clear support for end-to-end booking flows
+- Strong prevention of double-booking
+- Reliable ticket issuance after confirmed payment
+- Readable service boundaries and deployment design
+- Practical handling of high-demand traffic
+- Traceable incident and postmortem practices
 
-After seat selection, the system should guide users to secure payment. If payment succeeds, the reservation becomes final and the system issues a ticket with a unique QR code. If payment fails or times out, the locked seat should be released automatically.
+## 9. Assumptions
 
-### 4.5 Scalability During High Traffic
+- PostgreSQL is the primary system of record.
+- Redis is used for temporary seat locks and the waiting-room queue.
+- RabbitMQ or Kafka is used for asynchronous events and notifications.
+- The solution is containerized with Docker for development and prepared for Kubernetes deployment.
+- Terraform is used to describe key infrastructure resources.
+- External payment providers and external SMS/email gateways are integrated through APIs.
 
-For popular events, many users may enter the system at the same time. The architecture should support traffic control using a virtual waiting room, API gateway rate limiting, caching, queues, and scalable backend services.
+## 10. Scope Boundaries
 
-### 4.6 Decoupled and Maintainable Architecture
+This course project focuses on design, architecture, documentation, and lightweight code skeletons. It does not attempt to fully implement production payment integrations, advanced recommendation engines, or complete BI dashboards.
 
-The system should be divided into separate domains such as identity, event catalog, reservation, payment, notification, and reporting. This makes the system easier to maintain, test, and scale.
+## 11. Conclusion
 
-## 5. Key Features
-
-The main features of the system include:
-
-- User registration and login
-- Role-based access control
-- Event creation and management
-- Venue and seat layout management
-- Event search and filtering
-- Real-time seat availability
-- Temporary seat locking
-- Checkout and payment processing
-- Ticket generation with QR code
-- SMS and email notifications
-- Virtual waiting room
-- Organizer dashboard
-- Admin management panel
-- Monitoring and incident handling
-
-## 6. Business Value
-
-This platform provides value by reducing manual ticketing problems and improving trust between users, organizers, and the platform. It helps users buy tickets more easily and helps organizers manage sales more effectively.
-
-The system also reduces the risk of overbooking, payment confusion, and poor user experience during high-demand events.
-
-## 7. Success Metrics
-
-The success of this platform can be measured using the following metrics:
-
-- Number of successful ticket purchases
-- Payment success rate
-- Seat locking accuracy
-- Number of double-booking incidents
-- Average response time during high traffic
-- User satisfaction
-- Organizer satisfaction
-- System uptime
-- Notification delivery success rate
-
-## 8. Assumptions
-
-The following assumptions are considered in this project:
-
-- Users have internet access and can use a web-based platform.
-- Payment processing is handled through an external payment gateway.
-- Redis is used for temporary seat locks.
-- PostgreSQL is used as the main relational database.
-- A message broker such as RabbitMQ or Kafka is used for asynchronous communication.
-- Docker is used for local environment setup.
-- Kubernetes and Terraform are considered for deployment architecture.
-
-## 9. Future Scope
-
-In future versions, the platform can support:
-
-- Mobile applications
-- Dynamic pricing
-- Refund management
-- Ticket transfer between users
-- Advanced fraud detection
-- Multiple payment providers
-- Recommendation system for events
-- More detailed organizer analytics
-
-## 10. Conclusion
-
-The Event Ticketing Platform is designed to provide a complete and reliable ticket purchasing experience. Its main focus is real-time seat management, secure checkout, prevention of double-booking, and scalable architecture.
-
-By using decoupled services, Redis-based temporary locking, PostgreSQL, asynchronous messaging, Docker, Kubernetes, and Terraform, the system can be designed as a practical and production-ready software engineering project.
-EOF
+The proposed event ticketing platform is designed for scalability, reliability, and concurrency safety. It combines a customer-friendly booking journey with architectural mechanisms that help the platform remain stable during peak traffic and operational incidents.

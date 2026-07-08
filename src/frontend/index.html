@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SE2 Ticketing Platform</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero__content">
+        <p class="eyebrow">Software Engineering II Project</p>
+        <h1>End-to-End Event Ticketing Platform</h1>
+        <p class="hero__text">
+          A lightweight frontend mockup for event discovery, seat locking,
+          checkout, and waiting-room control.
+        </p>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel">
+        <h2>Event Search</h2>
+        <div class="search-grid">
+          <input type="text" placeholder="Search by event title" />
+          <select>
+            <option>All categories</option>
+            <option>Concert</option>
+            <option>Sports</option>
+            <option>Theatre</option>
+          </select>
+          <input type="date" />
+          <button id="searchButton">Search Events</button>
+        </div>
+      </section>
+
+      <section class="panel panel--split">
+        <div>
+          <h2>Event Details</h2>
+          <h3 id="eventTitle">Kabul Live Music Night</h3>
+          <p id="eventMeta">Friday, 19 July 2026 • Royal Hall • Concert</p>
+          <p>
+            This sample event demonstrates how customers can review details
+            before entering the seat selection and checkout flow.
+          </p>
+        </div>
+        <aside class="status-card">
+          <p class="status-card__label">Waiting Room</p>
+          <p class="status-card__value" id="queueStatus">Open access</p>
+          <p class="status-card__hint">
+            High-demand events can route users through a queue before seat
+            locking is allowed.
+          </p>
+        </aside>
+      </section>
+
+      <section class="panel">
+        <h2>Seat Selection</h2>
+        <div class="seat-grid" id="seatGrid">
+          <button class="seat">A1</button>
+          <button class="seat">A2</button>
+          <button class="seat is-locked">A3</button>
+          <button class="seat">A4</button>
+          <button class="seat">B1</button>
+          <button class="seat is-selected">B2</button>
+          <button class="seat">B3</button>
+          <button class="seat is-booked" disabled>B4</button>
+        </div>
+        <div class="legend">
+          <span><i class="dot dot--available"></i> Available</span>
+          <span><i class="dot dot--selected"></i> Selected</span>
+          <span><i class="dot dot--locked"></i> Locked</span>
+          <span><i class="dot dot--booked"></i> Booked</span>
+        </div>
+      </section>
+
+      <section class="panel panel--split">
+        <div>
+          <h2>Checkout Summary</h2>
+          <ul class="summary-list">
+            <li>Event: Kabul Live Music Night</li>
+            <li>Seats: B2</li>
+            <li>Lock timeout: 08:00 minutes remaining</li>
+            <li>Total amount: $30.00</li>
+          </ul>
+        </div>
+        <div class="checkout-box">
+          <button id="checkoutButton">Proceed to Payment</button>
+          <p class="checkout-box__note">
+            Final ticket issuance happens only after payment confirmation.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
