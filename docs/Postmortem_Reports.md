@@ -55,6 +55,10 @@ Describe the direct technical reason for the incident.
 
 List secondary causes such as poor observability, missing validation, or high traffic.
 
+### Metrics Reviewed
+
+Record the runtime evidence used during analysis, such as API latency, reservation lock failure rate, payment failure rate, queue backlog, and Redis health.
+
 ### Resolution
 
 Describe what restored service.

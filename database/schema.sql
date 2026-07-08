@@ -111,7 +111,7 @@ CREATE TABLE payments (
     reservation_id BIGINT NOT NULL UNIQUE REFERENCES reservations(id) ON DELETE RESTRICT,
     payment_provider VARCHAR(60) NOT NULL,
     provider_reference VARCHAR(120) NOT NULL UNIQUE,
-    payment_status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (payment_status IN ('pending', 'authorized', 'paid', 'failed', 'refunded', 'cancelled')),
+    payment_status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (payment_status IN ('initiated', 'pending', 'success', 'failed', 'cancelled')),
     amount NUMERIC(12, 2) NOT NULL CHECK (amount >= 0),
     currency CHAR(3) NOT NULL DEFAULT 'USD',
     callback_received_at TIMESTAMPTZ,
@@ -128,6 +128,7 @@ CREATE TABLE tickets (
     payment_id BIGINT NOT NULL REFERENCES payments(id) ON DELETE RESTRICT,
     ticket_number VARCHAR(60) NOT NULL UNIQUE,
     qr_hash VARCHAR(128) NOT NULL UNIQUE,
+    qr_code_data_url TEXT,
     ticket_status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (ticket_status IN ('active', 'used', 'cancelled', 'refunded', 'invalidated')),
     issued_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     validated_at TIMESTAMPTZ,
@@ -161,6 +162,7 @@ CREATE INDEX idx_events_discovery ON events (publish_status, category, start_tim
 CREATE INDEX idx_events_title_search ON events (title);
 CREATE INDEX idx_reservations_user_lookup ON reservations (user_id, created_at DESC);
 CREATE INDEX idx_reservations_event_lookup ON reservations (event_id, reservation_status);
+CREATE INDEX idx_reservation_seats_event_seat_lookup ON reservation_seats (event_id, seat_id);
 CREATE INDEX idx_payments_provider_reference ON payments (provider_reference);
 CREATE INDEX idx_tickets_qr_hash ON tickets (qr_hash);
 CREATE INDEX idx_notifications_user_lookup ON notifications (user_id, created_at DESC);

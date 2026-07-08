@@ -1,3 +1,4 @@
+import cors from "cors";
 import express from "express";
 import authRouter from "./modules/auth/router";
 import eventsRouter from "./modules/events/router";
@@ -8,12 +9,28 @@ import paymentsRouter from "./modules/payments/router";
 import ticketsRouter from "./modules/tickets/router";
 import notificationsRouter from "./modules/notifications/router";
 import adminRouter from "./modules/admin/router";
+import { AppError } from "./shared/errors";
 import type { HealthResponse } from "./shared/types";
+import { httpRequestCounter, registry } from "./shared/metrics";
 
 export function createApp() {
   const app = express();
 
+  app.use(cors());
   app.use(express.json());
+
+  app.use((req, res, next) => {
+    res.on("finish", () => {
+      const route = req.route?.path ?? req.path;
+      httpRequestCounter.inc({
+        method: req.method,
+        route,
+        status_code: res.statusCode,
+      });
+    });
+
+    next();
+  });
 
   app.get("/health", (_req, res) => {
     const payload: HealthResponse = {
@@ -25,6 +42,11 @@ export function createApp() {
     res.json(payload);
   });
 
+  app.get("/metrics", async (_req, res) => {
+    res.setHeader("Content-Type", registry.contentType);
+    res.end(await registry.metrics());
+  });
+
   app.use("/api/auth", authRouter);
   app.use("/api/events", eventsRouter);
   app.use("/api/venues", venuesRouter);
@@ -34,6 +56,20 @@ export function createApp() {
   app.use("/api/tickets", ticketsRouter);
   app.use("/api/notifications", notificationsRouter);
   app.use("/api/admin", adminRouter);
+
+  app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    if (error instanceof AppError) {
+      res.status(error.statusCode).json({
+        error: error.message,
+      });
+      return;
+    }
+
+    console.error(error);
+    res.status(500).json({
+      error: "Internal server error.",
+    });
+  });
 
   return app;
 }

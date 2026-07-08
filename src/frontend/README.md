@@ -1,13 +1,18 @@
-# Frontend Skeleton
+# Frontend Demo
 
-This folder contains a simple static frontend skeleton for demonstrating the main user journey of the Event Ticketing Platform.
+This folder contains a simple static frontend for demonstrating the runnable MVP workflow.
 
-Included sections:
+The frontend calls the local API at `http://localhost:3000` and shows:
 
-- Event search
-- Event details
-- Seat selection
-- Checkout summary
-- Waiting-room status
+- login,
+- event listing,
+- event details,
+- seat map,
+- seat locking,
+- checkout,
+- mock payment success and failure,
+- ticket display,
+- notifications,
+- admin summary.
 
-The page is intentionally lightweight and presentation-focused for course submission purposes.
+The implementation is intentionally plain HTML, CSS, and JavaScript so the project stays easy to understand and easy to demo in a course setting.

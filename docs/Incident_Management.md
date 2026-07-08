@@ -68,6 +68,7 @@ The platform should maintain:
 - Booking and payment logs with correlation IDs
 - Alerting for high error rate, queue lag, and lock anomalies
 - Runbooks for reservation, payment, and notification failures
+- Runtime metrics such as API latency, reservation lock failure rate, payment failure rate, RabbitMQ queue health, and Redis availability
 
 ## 9. Conclusion
 

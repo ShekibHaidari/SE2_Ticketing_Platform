@@ -1,51 +1,63 @@
-# Docker Setup
+# Docker Compose MVP Setup
 
 ## Purpose
 
-This folder provides a simple Docker Compose environment for the course project. It supports the ticketing architecture by giving the team a repeatable local stack for PostgreSQL, Redis, RabbitMQ, and a placeholder API container.
+This Docker Compose setup runs the local MVP of the Event Ticketing Platform with:
 
-## Included Services
+- PostgreSQL
+- Redis
+- RabbitMQ
+- the runnable modular-monolith API
+- the static frontend
+- Prometheus
+- Grafana
 
-- `ticketing-postgres` on port `5432`
-- `ticketing-redis` on port `6379`
-- `ticketing-rabbitmq` on ports `5672` and `15672`
-- `ticketing-api` placeholder service on port `3000`
-
-## Start the Services
+## Start the Full Demo Stack
 
 ```bash
 cd infra/docker
 cp .env.example .env
-docker compose up -d
+docker compose up --build
 ```
 
-## Stop the Services
+## Stop the Stack
 
 ```bash
 docker compose down
+```
+
+## Rebuild After Code Changes
+
+```bash
+docker compose up --build
 ```
 
 ## Check Logs
 
 ```bash
 docker compose logs -f
+docker compose logs -f ticketing-api
 docker compose logs -f ticketing-postgres
 docker compose logs -f ticketing-rabbitmq
 ```
 
-## RabbitMQ Management UI
+## Included URLs
 
-After startup, the RabbitMQ management UI is available at:
+- API: `http://localhost:3000`
+- Frontend: `http://localhost:8080`
+- RabbitMQ Management UI: `http://localhost:15672`
+- Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3001`
 
-`http://localhost:15672`
+## Database Initialization
 
-Use the credentials defined in `.env`.
+On first startup, PostgreSQL automatically loads:
 
-## Architectural Relevance
+- `database/schema.sql`
+- `database/seed.sql`
 
-This Docker setup supports the platform architecture by:
+This creates the schema and the demo users, venue, seats, and events.
 
-- providing PostgreSQL as the primary transactional database,
-- providing Redis for temporary seat locks and waiting-room coordination,
-- providing RabbitMQ for asynchronous messaging,
-- leaving room for the backend skeleton to be connected later without changing the overall environment shape.
+## Architectural Note
+
+The local MVP is implemented as a modular monolith so it is easy to run in one API container. The diagrams, Kubernetes manifests, and Terraform artifacts still show how the same domains could be deployed as separate services in a production-oriented environment.

@@ -1,6 +1,6 @@
 # Backend Skeleton
 
-This folder contains a lightweight Express + TypeScript backend skeleton for the Software Engineering II ticketing platform project.
+This folder contains the runnable Express + TypeScript backend MVP for the Software Engineering II ticketing platform project.
 
 The goal is to show clear module boundaries that reflect the architecture document:
 
@@ -14,4 +14,4 @@ The goal is to show clear module boundaries that reflect the architecture docume
 - notifications
 - admin
 
-The handlers are placeholders only. They are intentionally minimal so the repository stays focused on system design and architecture rather than full implementation complexity.
+The local implementation is a modular monolith so the project remains easy to run for a course demo. The deployment diagrams and Kubernetes manifests still show how the same modules could be separated into independent services in a production-oriented architecture.

@@ -3,93 +3,125 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SE2 Ticketing Platform</title>
+    <title>SE2 Ticketing Platform MVP</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <header class="hero">
-      <div class="hero__content">
-        <p class="eyebrow">Software Engineering II Project</p>
+      <div class="hero__inner">
+        <p class="hero__eyebrow">Runnable MVP</p>
         <h1>End-to-End Event Ticketing Platform</h1>
-        <p class="hero__text">
-          A lightweight frontend mockup for event discovery, seat locking,
-          checkout, and waiting-room control.
+        <p class="hero__copy">
+          Modular-monolith demo for registration, login, event discovery, seat
+          locking, mock payment, ticket issuance, notifications, and basic
+          admin visibility.
         </p>
       </div>
     </header>
 
-    <main class="layout">
-      <section class="panel">
-        <h2>Event Search</h2>
-        <div class="search-grid">
-          <input type="text" placeholder="Search by event title" />
-          <select>
-            <option>All categories</option>
-            <option>Concert</option>
-            <option>Sports</option>
-            <option>Theatre</option>
-          </select>
-          <input type="date" />
-          <button id="searchButton">Search Events</button>
+    <main class="container">
+      <section class="card card--wide">
+        <h2>Login</h2>
+        <div class="login-grid">
+          <label>
+            Email
+            <input id="emailInput" type="email" value="customer@example.com" />
+          </label>
+          <label>
+            Password
+            <input id="passwordInput" type="password" value="password123" />
+          </label>
+          <button id="loginButton">Login</button>
         </div>
+        <p class="muted">
+          Demo users: `admin@example.com`, `organizer@example.com`,
+          `customer@example.com` with password `password123`.
+        </p>
+        <pre id="authStatus" class="status-box">Not logged in.</pre>
       </section>
 
-      <section class="panel panel--split">
-        <div>
-          <h2>Event Details</h2>
-          <h3 id="eventTitle">Kabul Live Music Night</h3>
-          <p id="eventMeta">Friday, 19 July 2026 • Royal Hall • Concert</p>
-          <p>
-            This sample event demonstrates how customers can review details
-            before entering the seat selection and checkout flow.
-          </p>
-        </div>
-        <aside class="status-card">
-          <p class="status-card__label">Waiting Room</p>
-          <p class="status-card__value" id="queueStatus">Open access</p>
-          <p class="status-card__hint">
-            High-demand events can route users through a queue before seat
-            locking is allowed.
-          </p>
-        </aside>
+      <section class="grid">
+        <section class="card">
+          <div class="card__header">
+            <h2>Events</h2>
+            <button id="loadEventsButton">Load Events</button>
+          </div>
+          <div id="eventsList" class="list"></div>
+        </section>
+
+        <section class="card">
+          <div class="card__header">
+            <h2>Event Details</h2>
+            <button id="refreshEventButton">Refresh Selected Event</button>
+          </div>
+          <pre id="eventDetails" class="status-box">Select an event to view details.</pre>
+        </section>
       </section>
 
-      <section class="panel">
-        <h2>Seat Selection</h2>
-        <div class="seat-grid" id="seatGrid">
-          <button class="seat">A1</button>
-          <button class="seat">A2</button>
-          <button class="seat is-locked">A3</button>
-          <button class="seat">A4</button>
-          <button class="seat">B1</button>
-          <button class="seat is-selected">B2</button>
-          <button class="seat">B3</button>
-          <button class="seat is-booked" disabled>B4</button>
-        </div>
-        <div class="legend">
-          <span><i class="dot dot--available"></i> Available</span>
-          <span><i class="dot dot--selected"></i> Selected</span>
-          <span><i class="dot dot--locked"></i> Locked</span>
-          <span><i class="dot dot--booked"></i> Booked</span>
-        </div>
+      <section class="grid">
+        <section class="card">
+          <div class="card__header">
+            <h2>Seat Map</h2>
+            <button id="loadSeatMapButton">Load Seat Map</button>
+          </div>
+          <div id="seatMap" class="seat-grid"></div>
+          <p id="selectedSeatSummary" class="muted">No seat selected.</p>
+          <button id="lockSeatButton">Lock Selected Seat</button>
+        </section>
+
+        <section class="card">
+          <div class="card__header">
+            <h2>Checkout</h2>
+            <button id="loadReservationButton">Reload Reservation</button>
+          </div>
+          <pre id="reservationDetails" class="status-box">No reservation yet.</pre>
+          <div class="button-row">
+            <button id="checkoutButton">Create Checkout</button>
+            <button id="paymentSuccessButton">Mock Success</button>
+            <button id="paymentFailButton" class="danger">Mock Fail</button>
+          </div>
+          <pre id="paymentDetails" class="status-box">No payment yet.</pre>
+        </section>
       </section>
 
-      <section class="panel panel--split">
-        <div>
-          <h2>Checkout Summary</h2>
-          <ul class="summary-list">
-            <li>Event: Kabul Live Music Night</li>
-            <li>Seats: B2</li>
-            <li>Lock timeout: 08:00 minutes remaining</li>
-            <li>Total amount: $30.00</li>
-          </ul>
-        </div>
-        <div class="checkout-box">
-          <button id="checkoutButton">Proceed to Payment</button>
-          <p class="checkout-box__note">
-            Final ticket issuance happens only after payment confirmation.
+      <section class="grid">
+        <section class="card">
+          <div class="card__header">
+            <h2>Tickets</h2>
+            <button id="loadTicketsButton">Load My Tickets</button>
+          </div>
+          <div id="ticketsList" class="list"></div>
+        </section>
+
+        <section class="card">
+          <div class="card__header">
+            <h2>Notifications</h2>
+            <button id="loadNotificationsButton">Load Notifications</button>
+          </div>
+          <div id="notificationsList" class="list"></div>
+        </section>
+      </section>
+
+      <section class="grid">
+        <section class="card">
+          <div class="card__header">
+            <h2>Admin Summary</h2>
+            <button id="loadAdminSummaryButton">Load Summary</button>
+          </div>
+          <pre id="adminSummary" class="status-box">No admin summary loaded.</pre>
+        </section>
+
+        <section class="card">
+          <div class="card__header">
+            <h2>Demo Reset</h2>
+            <button id="resetDemoButton">Reset Seed Data</button>
+          </div>
+          <p class="muted">
+            This calls `/api/admin/seed-demo-reset` and restores the demo users,
+            venue, hall, sections, seats, and events.
           </p>
-        </div>
+          <pre id="resetStatus" class="status-box">Seed reset not triggered.</pre>
+        </section>
       </section>
     </main>
 
