@@ -1,0 +1,61 @@
+@startuml
+title Activity Diagram 02 - Admin Event Creation
+
+start
+
+:Admin / Organizer logs in;
+:Open event management panel;
+
+if (Organizer account approved?) then (Yes)
+  :Create new event;
+else (No)
+  :Send account approval request;
+  :Admin reviews organizer account;
+
+  if (Account approved?) then (Yes)
+    :Allow organizer to create event;
+  else (No)
+    :Reject request and notify organizer;
+    stop
+  endif
+endif
+
+:Enter event title and description;
+:Select event category;
+:Set start time and end time;
+
+if (Venue already exists?) then (Yes)
+  :Select existing venue;
+else (No)
+  :Create new venue;
+  :Define hall information;
+  :Define sections, rows, and seats;
+endif
+
+:Configure venue layout;
+:Define seat pricing categories;
+:Set capacity and scheduling constraints;
+
+:Validate event information;
+
+if (Event information valid?) then (Yes)
+  :Save event as draft;
+else (No)
+  :Show validation errors;
+  :Fix event information;
+  :Validate event information again;
+endif
+
+:Preview event page;
+
+if (Ready to publish?) then (Yes)
+  :Publish event;
+  :Make event visible in search results;
+  :Notify organizer about successful publish;
+else (No)
+  :Keep event as draft;
+endif
+
+stop
+
+@enduml
