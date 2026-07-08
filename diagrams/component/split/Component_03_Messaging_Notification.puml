@@ -1,0 +1,43 @@
+@startuml
+title Component Diagram 03 - Messaging and Notification Components
+
+left to right direction
+skinparam shadowing false
+skinparam componentStyle rectangle
+
+package "Event Producers" {
+  component "Reservation Service" as Reservation
+  component "Payment Service" as Payment
+  component "Ticket Service" as Ticket
+}
+
+queue "Message Broker\nRabbitMQ / Kafka" as Broker
+
+package "Event Consumers" {
+  component "Notification Service" as Notification
+  component "Analytics Service" as Analytics
+  component "Audit Log Worker" as Audit
+}
+
+database "PostgreSQL" as Postgres
+cloud "SMS Provider" as SMS
+cloud "Email Provider" as Email
+
+Reservation --> Broker : ReservationCreated\nReservationExpired
+Payment --> Broker : PaymentSucceeded\nPaymentFailed
+Ticket --> Broker : TicketIssued
+
+Broker --> Notification : consume ticket/payment events
+Broker --> Analytics : consume business events
+Broker --> Audit : consume audit events
+
+Notification --> Postgres : save notification status
+Notification --> SMS : send SMS
+Notification --> Email : send email
+
+Analytics --> Postgres : update reports
+Audit --> Postgres : save audit logs
+
+Notification --> Broker : NotificationRetryRequested\nif sending failed
+
+@enduml

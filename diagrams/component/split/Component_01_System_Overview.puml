@@ -1,0 +1,65 @@
+@startuml
+title Component Diagram 01 - System Component Overview
+
+left to right direction
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+actor "Customer / Buyer" as Customer
+actor "Event Organizer" as Organizer
+actor "System Admin" as Admin
+
+component "Web / Mobile Client" as Client
+component "API Gateway" as Gateway
+
+package "Core Application Components" {
+  component "Identity and\nAccess Control" as Identity
+  component "Event Catalog\nand Discovery" as Catalog
+  component "Waiting Room\nService" as WaitingRoom
+  component "Reservation Engine\nand Inventory" as Reservation
+  component "Billing and\nCheckout" as Billing
+  component "Ticket Issuance\nService" as Ticket
+  component "Notification\nService" as Notification
+  component "Analytics and\nReporting" as Analytics
+}
+
+database "PostgreSQL\nMain Database" as Postgres
+database "Redis\nSeat Locks / Queue" as Redis
+queue "Message Broker\nRabbitMQ / Kafka" as Broker
+
+cloud "External Payment\nGateway" as PaymentGateway
+cloud "SMS / Email\nProvider" as SmsEmail
+
+Customer --> Client
+Organizer --> Client
+Admin --> Client
+
+Client --> Gateway
+
+Gateway --> Identity
+Gateway --> Catalog
+Gateway --> WaitingRoom
+Gateway --> Reservation
+Gateway --> Billing
+Gateway --> Ticket
+Gateway --> Analytics
+
+Identity --> Postgres
+Catalog --> Postgres
+Reservation --> Postgres
+Reservation --> Redis
+WaitingRoom --> Redis
+Billing --> Postgres
+Billing --> PaymentGateway
+Ticket --> Postgres
+Notification --> SmsEmail
+Analytics --> Postgres
+
+Billing --> Broker
+Reservation --> Broker
+Ticket --> Broker
+Broker --> Notification
+Broker --> Analytics
+
+@enduml
