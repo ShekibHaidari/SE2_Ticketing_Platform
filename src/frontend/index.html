@@ -86,7 +86,7 @@
 
       <section id="staffOverview" class="card dashboard-overview" data-role-scope="STAFF">
         <div class="section-head">
-          <h2>داشبورد کارمند گیشه / کنترل بلیت</h2>
+          <h2>داشبورد کارمند گیشه</h2>
           <button class="secondary" data-nav-target="staffSection">رفتن به کنترل بلیت</button>
         </div>
         <div class="cards-grid">
@@ -363,13 +363,19 @@
         <section class="card" id="staffSection">
           <div class="section-head">
             <h2>کنترل بلیت</h2>
-            <span class="pill">جستجوی بلیت</span>
+            <span class="pill">اعتبارسنجی ورود</span>
           </div>
           <label>
-            کد بلیت
-            <input id="ticketCodeInput" type="text" placeholder="مثلاً CIN-1234ABCD" />
+            کد بلیت را وارد کنید
+            <input id="ticketCodeInput" type="text" placeholder="مثلاً CIN-20260710-A8K92Q" />
           </label>
-          <button id="validateTicketButton">بررسی بلیت</button>
+          <div class="row-actions">
+            <button id="searchTicketButton" class="secondary">جستجوی بلیت</button>
+            <button id="validateTicketButton">اعتبارسنجی و ثبت ورود</button>
+          </div>
+          <div id="staffTicketResult" class="list">
+            <div class="item">پس از جستجو، جزئیات بلیت در اینجا نمایش داده می‌شود.</div>
+          </div>
           <pre id="staffValidationResult" class="status-box">نتیجه اعتبارسنجی اینجا نمایش داده می‌شود.</pre>
         </section>
       </section>

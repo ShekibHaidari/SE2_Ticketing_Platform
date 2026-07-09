@@ -67,6 +67,7 @@ const state = {
   currentReservation: null,
   currentPayment: null,
   finalTickets: [],
+  staffTicket: null,
   countdownTimerId: null,
   managerMovies: [],
   managerCinemas: [],
@@ -107,6 +108,7 @@ const managerShowtimeStatus = $("managerShowtimeStatus");
 const managerShowtimesList = $("managerShowtimesList");
 const managerSalesCards = $("managerSalesCards");
 const salesReportList = $("salesReportList");
+const staffTicketResult = $("staffTicketResult");
 const staffValidationResult = $("staffValidationResult");
 const adminSummary = $("adminSummary");
 const resetStatus = $("resetStatus");
@@ -278,6 +280,7 @@ function clearCustomerFlow(keepMovie = false) {
   state.currentReservation = null;
   state.currentPayment = null;
   state.finalTickets = [];
+  state.staffTicket = null;
   seatShowtimeSummary.textContent = "عنوان فیلم، سینما، سالن و سانس انتخاب‌شده در اینجا نمایش داده می‌شود.";
   seatMap.innerHTML = "";
   selectedSeatSummary.textContent = "هنوز صندلی انتخاب نشده است.";
@@ -315,6 +318,7 @@ function resetTransientState() {
   managerShowtimesList.innerHTML = "";
   managerSalesCards.innerHTML = "";
   salesReportList.innerHTML = "";
+  staffTicketResult.innerHTML = `<div class="item">پس از جستجو، جزئیات بلیت در اینجا نمایش داده می‌شود.</div>`;
   staffValidationResult.textContent = "نتیجه اعتبارسنجی اینجا نمایش داده می‌شود.";
   adminSummary.textContent = "اطلاعات مدیریتی هنوز بارگذاری نشده است.";
   resetStatus.textContent = "داده‌های نمایشی هنوز بازنشانی نشده‌اند.";
@@ -339,6 +343,19 @@ function renderMetricCards(container, items) {
     card.innerHTML = `<h3>${item.label}</h3><strong>${item.value}</strong>`;
     container.appendChild(card);
   });
+}
+
+function ticketBadgeClass(status) {
+  if (status === "VALID") return "success";
+  if (status === "USED") return "neutral";
+  return "danger";
+}
+
+function paymentStatusLabel(status) {
+  if (status === "success") return "موفق";
+  if (status === "failed") return "ناموفق";
+  if (status === "pending") return "در انتظار";
+  return status;
 }
 
 function renderMovieList(movies) {
@@ -502,9 +519,18 @@ async function renderFinalTickets(tickets) {
       <div>سالن: ${detail.hallName}</div>
       <div>صندلی: ${detail.seat.rowLabel}${detail.seat.seatNumber}</div>
       <div>سانس: ${toPersianDate(detail.showtime)}</div>
-      <div>وضعیت بلیت: ${detail.ticketStatusLabel}</div>
+      <div>وضعیت بلیت: <span class="badge ${ticketBadgeClass(detail.ticketStatus)}">${detail.ticketStatusLabel}</span></div>
+      <div>این کد را هنگام ورود به سالن به کارمند گیشه نشان دهید.</div>
       ${detail.qrCodeDataUrl ? `<img class="ticket-image" src="${detail.qrCodeDataUrl}" alt="QR" />` : ""}
     `;
+    const actions = document.createElement("div");
+    actions.className = "row-actions";
+    const copyButton = document.createElement("button");
+    copyButton.className = "secondary";
+    copyButton.textContent = "کپی کد بلیت";
+    copyButton.addEventListener("click", async () => copyTicketCode(detail.ticketNumber));
+    actions.appendChild(copyButton);
+    item.appendChild(actions);
     finalTicketDetails.appendChild(item);
   }
 }
@@ -813,9 +839,18 @@ async function loadTickets() {
       <div>سالن: ${ticket.hallName}</div>
       <div>صندلی: ${ticket.seat.rowLabel}${ticket.seat.seatNumber}</div>
       <div>سانس: ${toPersianDate(ticket.showtime)}</div>
-      <div>وضعیت بلیت: ${ticket.ticketStatusLabel}</div>
+      <div>وضعیت بلیت: <span class="badge ${ticketBadgeClass(ticket.ticketStatus)}">${ticket.ticketStatusLabel}</span></div>
+      <div>این کد را هنگام ورود به سالن به کارمند گیشه نشان دهید.</div>
       ${ticket.qrCodeDataUrl ? `<img class="ticket-image" src="${ticket.qrCodeDataUrl}" alt="QR" />` : ""}
     `;
+    const actions = document.createElement("div");
+    actions.className = "row-actions";
+    const copyButton = document.createElement("button");
+    copyButton.className = "secondary";
+    copyButton.textContent = "کپی کد بلیت";
+    copyButton.addEventListener("click", async () => copyTicketCode(ticket.ticketNumber));
+    actions.appendChild(copyButton);
+    item.appendChild(actions);
     ticketsList.appendChild(item);
   });
 }
@@ -834,6 +869,34 @@ async function loadNotifications() {
     `;
     notificationsList.appendChild(item);
   });
+}
+
+async function copyTicketCode(ticketCode) {
+  await navigator.clipboard.writeText(ticketCode);
+  window.alert("کد بلیت کپی شد.");
+}
+
+function renderStaffTicket(ticket) {
+  if (!ticket) {
+    staffTicketResult.innerHTML = `<div class="item">پس از جستجو، جزئیات بلیت در اینجا نمایش داده می‌شود.</div>`;
+    return;
+  }
+
+  staffTicketResult.innerHTML = `
+    <div class="item">
+      <strong>کد بلیت: ${ticket.ticketCode}</strong>
+      <div>وضعیت بلیت: <span class="badge ${ticketBadgeClass(ticket.status)}">${ticket.statusLabel}</span></div>
+      <div>نام خریدار: ${ticket.customerName}</div>
+      <div>ایمیل خریدار: ${ticket.customerEmail}</div>
+      <div>نام فیلم: ${ticket.movieTitle}</div>
+      <div>سینما: ${ticket.cinemaName}</div>
+      <div>سالن: ${ticket.hallName}</div>
+      <div>صندلی: ${ticket.seatLabel}</div>
+      <div>زمان سانس: ${toPersianDate(ticket.showtime)}</div>
+      <div>وضعیت پرداخت: ${paymentStatusLabel(ticket.paymentStatus)}</div>
+      <div>زمان صدور: ${toPersianDate(ticket.createdAt)}</div>
+    </div>
+  `;
 }
 
 function populateSelect(selectId, items, placeholder, mapFn) {
@@ -1174,14 +1237,39 @@ async function saveShowtime() {
   await loadSalesReport();
 }
 
+async function searchTicket() {
+  requireRole("STAFF");
+  try {
+    const code = $("ticketCodeInput").value.trim();
+    const result = await api(`/api/staff/tickets/search?code=${encodeURIComponent(code)}`);
+    state.staffTicket = result.ticket;
+    renderStaffTicket(result.ticket);
+    staffValidationResult.textContent = "بلیت پیدا شد و آماده اعتبارسنجی است.";
+  } catch (error) {
+    state.staffTicket = null;
+    renderStaffTicket(null);
+    staffValidationResult.textContent = error.message === "بلیتی با این کد پیدا نشد."
+      ? "بلیت نامعتبر است یا پیدا نشد."
+      : error.message;
+  }
+}
+
 async function validateTicket() {
   requireRole("STAFF");
-  const ticketCode = $("ticketCodeInput").value.trim();
-  const result = await api("/api/staff/tickets/validate-code", {
-    method: "POST",
-    body: JSON.stringify({ ticketCode }),
-  });
-  staffValidationResult.textContent = pretty(result);
+  try {
+    const code = $("ticketCodeInput").value.trim();
+    const result = await api("/api/staff/tickets/validate-code", {
+      method: "POST",
+      body: JSON.stringify({ code }),
+    });
+    state.staffTicket = result.ticket;
+    renderStaffTicket(result.ticket);
+    staffValidationResult.textContent = result.message;
+  } catch (error) {
+    staffValidationResult.textContent = error.message === "بلیت نامعتبر است."
+      ? "بلیت نامعتبر است یا پیدا نشد."
+      : error.message;
+  }
 }
 
 async function loadAdminSummary() {
@@ -1241,6 +1329,7 @@ bind("saveShowtimeButton", saveShowtime);
 bind("refreshManagerShowtimesButton", loadManagerShowtimes);
 bind("loadManagerDashboardButton", loadManagerDashboard);
 bind("loadSalesReportButton", loadSalesReport);
+bind("searchTicketButton", searchTicket);
 bind("validateTicketButton", validateTicket);
 bind("loadAdminSummaryButton", loadAdminSummary);
 bind("resetDemoButton", resetDemo);

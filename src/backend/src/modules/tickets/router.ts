@@ -29,6 +29,12 @@ function toPersianTicketStatus(status: string) {
   return "معتبر";
 }
 
+function toPublicTicketStatus(status: string) {
+  if (status === "used") return "USED";
+  if (status === "cancelled") return "CANCELLED";
+  return "VALID";
+}
+
 router.get("/my/:userId", asyncHandler(async (req, res) => {
   const userId = Number(req.params.userId);
   const result = await query<TicketRow>(
@@ -64,7 +70,7 @@ router.get("/my/:userId", asyncHandler(async (req, res) => {
     ticketNumber: row.ticket_number,
     qrHash: row.qr_hash,
     qrCodeDataUrl: row.qr_code_data_url,
-    ticketStatus: row.ticket_status,
+    ticketStatus: toPublicTicketStatus(row.ticket_status),
     ticketStatusLabel: toPersianTicketStatus(row.ticket_status),
     issuedAt: row.issued_at,
     validatedAt: row.validated_at,
@@ -120,7 +126,7 @@ router.get("/:ticketId", asyncHandler(async (req, res) => {
     ticketNumber: row.ticket_number,
     qrHash: row.qr_hash,
     qrCodeDataUrl: row.qr_code_data_url,
-    ticketStatus: row.ticket_status,
+    ticketStatus: toPublicTicketStatus(row.ticket_status),
     ticketStatusLabel: toPersianTicketStatus(row.ticket_status),
     issuedAt: row.issued_at,
     validatedAt: row.validated_at,
@@ -138,26 +144,43 @@ router.get("/:ticketId", asyncHandler(async (req, res) => {
 
 router.post("/:ticketId/validate", asyncHandler(async (req, res) => {
   const ticketId = Number(req.params.ticketId);
+  const current = await query<{ id: number; ticket_status: string; validated_at: string | null }>(
+    `
+      SELECT id, ticket_status, validated_at
+      FROM tickets
+      WHERE id = $1
+    `,
+    [ticketId],
+  );
+
+  if (!current.rowCount) {
+    throw new AppError(404, "بلیت پیدا نشد.");
+  }
+
+  if (current.rows[0].ticket_status === "used") {
+    throw new AppError(409, "این بلیت قبلاً استفاده شده است.");
+  }
+
+  if (current.rows[0].ticket_status === "cancelled") {
+    throw new AppError(409, "این بلیت لغو شده است.");
+  }
+
   const result = await query<{ id: number; ticket_status: string; validated_at: string | null }>(
     `
       UPDATE tickets
-      SET ticket_status = CASE WHEN ticket_status = 'active' THEN 'used' ELSE ticket_status END,
-          validated_at = CASE WHEN ticket_status = 'active' THEN NOW() ELSE validated_at END
+      SET ticket_status = 'used',
+          validated_at = NOW()
       WHERE id = $1
       RETURNING id, ticket_status, validated_at
     `,
     [ticketId],
   );
 
-  if (!result.rowCount) {
-    throw new AppError(404, "بلیت پیدا نشد.");
-  }
-
   const row = result.rows[0];
   jsonOk(res, {
     ticketId: row.id,
-    valid: row.ticket_status === "used" || row.ticket_status === "active",
-    ticketStatus: row.ticket_status,
+    valid: true,
+    ticketStatus: toPublicTicketStatus(row.ticket_status),
     ticketStatusLabel: toPersianTicketStatus(row.ticket_status),
     validatedAt: row.validated_at,
   });

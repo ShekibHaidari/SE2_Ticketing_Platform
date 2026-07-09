@@ -34,6 +34,19 @@ type CreatedTicketRow = {
   qr_code_data_url: string;
 };
 
+type TicketQrRow = {
+  movie_title: string;
+};
+
+function buildTicketCode() {
+  const now = new Date();
+  const yyyy = now.getUTCFullYear();
+  const mm = String(now.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(now.getUTCDate()).padStart(2, "0");
+  const suffix = crypto.randomUUID().replace(/-/g, "").slice(0, 6).toUpperCase();
+  return `CIN-${yyyy}${mm}${dd}-${suffix}`;
+}
+
 router.post("/checkout", asyncHandler(async (req, res) => {
   const { reservationId, paymentProvider = "mock-gateway" } = req.body as {
     reservationId?: number;
@@ -217,11 +230,23 @@ router.post("/payments/mock-success/:paymentId", asyncHandler(async (req, res) =
     );
 
     const createdTickets: CreatedTicketRow[] = [];
+    const movieTitleResult = await client.query<TicketQrRow>(
+      `
+        SELECT m.title AS movie_title
+        FROM showtimes st
+        JOIN movies m ON m.id = st.movie_id
+        WHERE st.id = $1
+      `,
+      [reservation.showtime_id],
+    );
+    const movieTitle = movieTitleResult.rows[0]?.movie_title || "Cinema Ticket";
 
     for (const seat of seatRows) {
-      const ticketCode = `CIN-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
-      const qrHash = crypto.createHash("sha256").update(`${reservation.id}:${seat.seat_id}:${ticketCode}`).digest("hex");
-      const qrCodeDataUrl = await QRCode.toDataURL(qrHash);
+      const ticketCode = buildTicketCode();
+      const provisionalQrHash = crypto
+        .createHash("sha256")
+        .update(`${reservation.id}:${seat.seat_id}:${ticketCode}`)
+        .digest("hex");
 
       const ticketResult = await client.query<CreatedTicketRow>(
         `
@@ -240,14 +265,36 @@ router.post("/payments/mock-success/:paymentId", asyncHandler(async (req, res) =
           ON CONFLICT (showtime_id, seat_id) DO NOTHING
           RETURNING id, ticket_number, qr_hash, qr_code_data_url
         `,
-        [reservation.user_id, reservation.showtime_id, reservation.id, seat.seat_id, paymentId, ticketCode, qrHash, qrCodeDataUrl],
+        [reservation.user_id, reservation.showtime_id, reservation.id, seat.seat_id, paymentId, ticketCode, provisionalQrHash, ""],
       );
 
       if (!ticketResult.rowCount) {
         throw new AppError(409, "برای یکی از صندلی‌ها قبلاً بلیت صادر شده است.");
       }
 
-      createdTickets.push(ticketResult.rows[0]);
+      const insertedTicket = ticketResult.rows[0];
+      const qrPayload = JSON.stringify({
+        ticketCode,
+        ticketId: insertedTicket.id,
+        movieTitle,
+        showtimeId: reservation.showtime_id,
+        seatId: seat.seat_id,
+      });
+      const qrHash = crypto.createHash("sha256").update(qrPayload).digest("hex");
+      const qrCodeDataUrl = await QRCode.toDataURL(qrPayload);
+
+      const updatedTicket = await client.query<CreatedTicketRow>(
+        `
+          UPDATE tickets
+          SET qr_hash = $2,
+              qr_code_data_url = $3
+          WHERE id = $1
+          RETURNING id, ticket_number, qr_hash, qr_code_data_url
+        `,
+        [insertedTicket.id, qrHash, qrCodeDataUrl],
+      );
+
+      createdTickets.push(updatedTicket.rows[0]);
     }
 
     await client.query(

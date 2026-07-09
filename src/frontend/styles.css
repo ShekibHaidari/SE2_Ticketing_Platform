@@ -349,6 +349,16 @@ button.danger {
   color: var(--success);
 }
 
+.badge.neutral {
+  background: rgba(96, 114, 127, 0.16);
+  color: #465966;
+}
+
+.badge.danger {
+  background: rgba(180, 35, 73, 0.14);
+  color: var(--danger);
+}
+
 .badge.warning {
   background: rgba(208, 140, 24, 0.16);
   color: #9a6700;
