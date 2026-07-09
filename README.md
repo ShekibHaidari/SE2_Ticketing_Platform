@@ -1,69 +1,53 @@
-# SE2 Ticketing Platform
+# Cinema Ticketing Platform
 
-## Project Overview
+## معرفی پروژه
 
-This repository contains the Software Engineering II course project titled **Design and Architecture of an End-to-End Event Ticketing Platform**.
+این مخزن اکنون یک نسخه قابل اجرای **سامانه فروش بلیت سینما / Cinema Ticketing Platform** را در کنار مستندات معماری، UML، زیرساخت، تست و اسناد درسی نگه می‌دارد. محصول از یک MVP عمومی فروش بلیت به یک تجربه واقعی‌تر برای رزرو بلیت سینما با رابط فارسی و راست‌به‌چپ تبدیل شده است.
 
-The repository now includes both:
+## نقش‌های اصلی
 
-- the academic documentation, diagrams, infrastructure artifacts, Agile files, and testing plans required for the course,
-- a runnable MVP that demonstrates the core ticketing workflow.
+- `خریدار`: مشاهده فیلم‌ها، انتخاب سانس، قفل صندلی، پرداخت آزمایشی، دریافت بلیت
+- `مدیر سینما`: مشاهده داشبورد، سانس‌ها، فروش و درآمد
+- `کارمند گیشه یا کنترل بلیت`: جستجو و اعتبارسنجی بلیت
+- `مدیر سیستم`: مشاهده آمار کلی، کاربران، سینماها و لینک‌های مانیتورینگ
 
-The MVP supports:
+## ویژگی‌های قابل اجرا
 
-- user registration and login,
-- event listing and event details,
-- venue seat-map retrieval,
-- Redis-based temporary seat locking with `SET NX EX`,
-- double-booking prevention,
-- reservation expiry and lock release,
-- mock checkout and payment success or failure,
-- ticket generation with QR hashes,
-- RabbitMQ event publication,
-- notification persistence,
-- health and metrics endpoints.
+- رابط فارسی با چیدمان RTL
+- فهرست فیلم‌ها، جزئیات فیلم و سانس‌ها
+- انتخاب صندلی با قفل موقت مبتنی بر Redis
+- جلوگیری از فروش همزمان یک صندلی
+- پرداخت آزمایشی موفق یا ناموفق
+- صدور بلیت با QR
+- اعلان پس از صدور بلیت
+- اعتبارسنجی بلیت برای کارمند کنترل
+- داشبوردهای مدیر سینما و مدیر سیستم
+- متریک‌های Prometheus و مانیتورینگ Grafana
 
-The overall design is centered on scalability, reliability, and concurrency safety.
+## توضیح معماری
 
-## Architecture Explanation
+نسخه محلی و قابل اجرا به صورت **modular monolith** با Node.js + TypeScript + Express پیاده‌سازی شده است تا اجرای آن برای پروژه درسی ساده بماند. در عین حال:
 
-- `PostgreSQL` is the durable system of record.
-- `Redis` handles temporary seat locks and waiting-room coordination.
-- `RabbitMQ` is used for asynchronous event publication in the runnable MVP.
-- `Docker`, `Kubernetes`, and `Terraform` remain in the repository to show deployment and Infrastructure as Code planning.
+- `PostgreSQL` منبع اصلی داده است.
+- `Redis` برای قفل صندلی و هماهنگی رزرو موقت استفاده می‌شود.
+- `RabbitMQ` رویدادهای غیرهمزمان مانند `TicketIssued` را دریافت می‌کند.
+- `Prometheus` و `Grafana` برای مانیتورینگ در Docker Compose قرار گرفته‌اند.
+- پوشه‌های `infra/k8s` و `infra/terraform` نشان می‌دهند که همین ماژول‌ها چگونه در استقرارهای بزرگ‌تر تفکیک می‌شوند.
 
-### Modular Monolith Decision
+## کاربران نمایشی
 
-The local runnable MVP is implemented as a **modular monolith** inside one Express + TypeScript API. This keeps the project realistic, runnable, and easy to demo in a course setting.
+- `admin@example.com / password123`
+- `manager@example.com / password123`
+- `staff@example.com / password123`
+- `customer@example.com / password123`
 
-The deployment diagrams and Kubernetes manifests still show how the same domains can be separated into independent services in production. This keeps the project aligned with the decoupled architecture while remaining practical for local execution.
-
-## Repository Structure
-
-| Path | Purpose |
-| --- | --- |
-| `docs/` | Main academic documentation and report artifacts |
-| `database/` | PostgreSQL schema and seed data |
-| `diagrams/` | UML and deployment diagrams |
-| `src/backend/` | Runnable Express + TypeScript modular-monolith API |
-| `src/frontend/` | Runnable static frontend demo |
-| `infra/docker/` | Local Docker Compose environment with monitoring |
-| `infra/k8s/` | Kubernetes deployment manifests |
-| `infra/terraform/` | Infrastructure as Code skeleton |
-| `agile/` | Scrum and Jira-style planning artifacts |
-| `tests/` | Testing artifacts, demo scripts, and concurrency demo |
-
-## Local Run Instructions
-
-### Docker Run
+## اجرای پروژه با Docker
 
 ```bash
-cd infra/docker
-cp .env.example .env
-docker compose up --build
+docker compose -f infra/docker/docker-compose.yml up --build
 ```
 
-### Important URLs
+## آدرس‌های مهم
 
 - API: `http://localhost:3000`
 - Frontend: `http://localhost:8080`
@@ -71,50 +55,39 @@ docker compose up --build
 - Prometheus: `http://localhost:9090`
 - Grafana: `http://localhost:3001`
 
-## Test Users
+## جریان دمو
 
-- `admin@example.com / password123`
-- `organizer@example.com / password123`
-- `customer@example.com / password123`
+1. مرورگر را در `http://localhost:8080` باز کنید.
+2. فیلم‌ها را ببینید.
+3. یک سانس انتخاب کنید.
+4. یک صندلی آزاد برگزینید.
+5. صندلی را قفل کنید.
+6. به مرحله پرداخت بروید.
+7. `پرداخت موفق آزمایشی` را بزنید.
+8. بلیت صادرشده را ببینید.
+9. همان کد بلیت را در بخش کارمند کنترل اعتبارسنجی کنید.
 
-## Demo Flow
+## ویژگی‌های تکمیلی
 
-1. Open the frontend at `http://localhost:8080`.
-2. Login as `customer@example.com / password123`.
-3. Click `Load Events`.
-4. Select an event.
-5. Click `Load Seat Map`.
-6. Lock one available seat.
-7. Create checkout.
-8. Trigger mock payment success.
-9. View the generated ticket and notification.
+- Redis seat locking
+- RabbitMQ events
+- Prometheus metrics
+- Grafana dashboard
+- Kubernetes manifests
+- Terraform skeleton
+- Incident Management و Postmortem docs
 
-For the failure path, repeat the same flow and use mock payment failure instead of success.
+## ساختار مخزن
 
-## Monitoring and Bonus Readiness
+- `src/backend/` بک‌اند قابل اجرا
+- `src/frontend/` رابط فارسی و RTL
+- `database/` اسکیما و داده‌های نمایشی سینما
+- `infra/docker/` استک اجرایی کامل
+- `infra/k8s/` مانيفست‌های کوبرنتیز
+- `infra/terraform/` اسکلت Infrastructure as Code
+- `docs/` مستندات معماری و گزارش‌ها
+- `tests/` سناریوهای دستی و تست همزمانی
 
-The MVP also includes:
+## یادداشت نهایی
 
-- `/health` for health checks,
-- `/metrics` using `prom-client`,
-- Prometheus scraping for API metrics,
-- Grafana in Docker Compose for dashboard experiments.
-
-The incident and postmortem documents remain part of the repo and align with runtime metrics such as API latency, reservation lock failure rate, payment failure rate, RabbitMQ queue health, and Redis availability.
-
-## Manual and Concurrency Demo
-
-- Manual flow: [tests/manual-demo-script.md](/home/ahmad-shekib-haidari/Desktop/SE2_Ticketing_Platform/tests/manual-demo-script.md)
-- Concurrency demo command: `node tests/concurrency-demo.js`
-
-## Final Submission Readiness
-
-Review these before packaging the final submission:
-
-- [docs/Final_Submission_Checklist.md](/home/ahmad-shekib-haidari/Desktop/SE2_Ticketing_Platform/docs/Final_Submission_Checklist.md)
-- [docs/Project_Report.md](/home/ahmad-shekib-haidari/Desktop/SE2_Ticketing_Platform/docs/Project_Report.md)
-- [docs/Architecture_Document.md](/home/ahmad-shekib-haidari/Desktop/SE2_Ticketing_Platform/docs/Architecture_Document.md)
-
-## Note on Scope
-
-This repository contains an academic, student-friendly runnable MVP plus the full supporting architectural artifacts. The local implementation is simpler than a commercial production platform, but it proves the main booking workflow and the key architectural decisions in a practical way.
+این پروژه همچنان یک محصول آموزشی است، اما اکنون تجربه اجرایی آن به یک سامانه فروش بلیت سینما نزدیک‌تر شده و با اسناد معماری، مانیتورینگ، زیرساخت و تست‌های نمایشی هم‌راستا است.

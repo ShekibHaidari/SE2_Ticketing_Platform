@@ -4,41 +4,31 @@ CREATE TABLE users (
     email VARCHAR(255) NOT NULL UNIQUE,
     phone_number VARCHAR(32) UNIQUE,
     password_hash TEXT NOT NULL,
-    role VARCHAR(20) NOT NULL CHECK (role IN ('customer', 'organizer', 'admin')),
+    role VARCHAR(20) NOT NULL CHECK (role IN ('customer', 'manager', 'staff', 'admin')),
     account_status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (account_status IN ('active', 'suspended', 'pending_verification')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE organizer_profiles (
-    id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
-    organization_name VARCHAR(180) NOT NULL,
-    organization_status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (organization_status IN ('pending', 'approved', 'rejected', 'suspended')),
-    contact_email VARCHAR(255),
-    contact_phone VARCHAR(32),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE venues (
+CREATE TABLE cinemas (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(160) NOT NULL,
     city VARCHAR(100) NOT NULL,
     address_line TEXT NOT NULL,
-    venue_status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (venue_status IN ('active', 'inactive')),
+    manager_user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+    cinema_status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (cinema_status IN ('active', 'inactive')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE halls (
     id BIGSERIAL PRIMARY KEY,
-    venue_id BIGINT NOT NULL REFERENCES venues(id) ON DELETE CASCADE,
+    cinema_id BIGINT NOT NULL REFERENCES cinemas(id) ON DELETE CASCADE,
     name VARCHAR(120) NOT NULL,
     capacity INTEGER NOT NULL CHECK (capacity > 0),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE (venue_id, name)
+    UNIQUE (cinema_id, name)
 );
 
 CREATE TABLE sections (
@@ -58,33 +48,42 @@ CREATE TABLE seats (
     row_label VARCHAR(20) NOT NULL,
     seat_number VARCHAR(20) NOT NULL,
     seat_type VARCHAR(30) NOT NULL DEFAULT 'regular',
-    seat_status VARCHAR(20) NOT NULL DEFAULT 'available' CHECK (seat_status IN ('available', 'locked', 'reserved', 'blocked', 'inactive')),
+    seat_status VARCHAR(20) NOT NULL DEFAULT 'available' CHECK (seat_status IN ('available', 'inactive')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE (section_id, row_label, seat_number)
 );
 
-CREATE TABLE events (
+CREATE TABLE movies (
     id BIGSERIAL PRIMARY KEY,
-    organizer_id BIGINT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
-    hall_id BIGINT NOT NULL REFERENCES halls(id) ON DELETE RESTRICT,
     title VARCHAR(200) NOT NULL,
-    category VARCHAR(100) NOT NULL,
+    genre VARCHAR(100) NOT NULL,
+    duration_minutes INTEGER NOT NULL CHECK (duration_minutes > 0),
     description TEXT,
-    start_time TIMESTAMPTZ NOT NULL,
-    end_time TIMESTAMPTZ NOT NULL,
-    sale_start_time TIMESTAMPTZ,
-    sale_end_time TIMESTAMPTZ,
-    publish_status VARCHAR(20) NOT NULL DEFAULT 'draft' CHECK (publish_status IN ('draft', 'published', 'cancelled', 'completed')),
-    visibility_status VARCHAR(20) NOT NULL DEFAULT 'private' CHECK (visibility_status IN ('private', 'public')),
+    poster_url TEXT,
+    language VARCHAR(50) NOT NULL DEFAULT 'فارسی',
+    age_rating VARCHAR(20) NOT NULL DEFAULT '12+',
+    movie_status VARCHAR(20) NOT NULL DEFAULT 'published' CHECK (movie_status IN ('draft', 'published', 'archived')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE showtimes (
+    id BIGSERIAL PRIMARY KEY,
+    movie_id BIGINT NOT NULL REFERENCES movies(id) ON DELETE CASCADE,
+    hall_id BIGINT NOT NULL REFERENCES halls(id) ON DELETE CASCADE,
+    starts_at TIMESTAMPTZ NOT NULL,
+    ends_at TIMESTAMPTZ NOT NULL,
+    base_price NUMERIC(12, 2) NOT NULL CHECK (base_price >= 0),
+    showtime_status VARCHAR(20) NOT NULL DEFAULT 'scheduled' CHECK (showtime_status IN ('scheduled', 'cancelled', 'completed')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CHECK (end_time > start_time)
+    CHECK (ends_at > starts_at)
 );
 
 CREATE TABLE reservations (
     id BIGSERIAL PRIMARY KEY,
-    event_id BIGINT NOT NULL REFERENCES events(id) ON DELETE RESTRICT,
+    showtime_id BIGINT NOT NULL REFERENCES showtimes(id) ON DELETE RESTRICT,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
     reservation_code VARCHAR(50) NOT NULL UNIQUE,
     reservation_status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (reservation_status IN ('pending', 'locked', 'checkout_in_progress', 'confirmed', 'cancelled', 'expired', 'failed')),
@@ -97,13 +96,12 @@ CREATE TABLE reservations (
 CREATE TABLE reservation_seats (
     id BIGSERIAL PRIMARY KEY,
     reservation_id BIGINT NOT NULL REFERENCES reservations(id) ON DELETE CASCADE,
-    event_id BIGINT NOT NULL REFERENCES events(id) ON DELETE RESTRICT,
+    showtime_id BIGINT NOT NULL REFERENCES showtimes(id) ON DELETE RESTRICT,
     seat_id BIGINT NOT NULL REFERENCES seats(id) ON DELETE RESTRICT,
     lock_token UUID NOT NULL,
     price_at_lock NUMERIC(12, 2) NOT NULL CHECK (price_at_lock >= 0),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE (reservation_id, seat_id),
-    UNIQUE (event_id, seat_id)
+    UNIQUE (reservation_id, seat_id)
 );
 
 CREATE TABLE payments (
@@ -113,7 +111,7 @@ CREATE TABLE payments (
     provider_reference VARCHAR(120) NOT NULL UNIQUE,
     payment_status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (payment_status IN ('initiated', 'pending', 'success', 'failed', 'cancelled')),
     amount NUMERIC(12, 2) NOT NULL CHECK (amount >= 0),
-    currency CHAR(3) NOT NULL DEFAULT 'USD',
+    currency CHAR(3) NOT NULL DEFAULT 'AFN',
     callback_received_at TIMESTAMPTZ,
     paid_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -122,7 +120,8 @@ CREATE TABLE payments (
 
 CREATE TABLE tickets (
     id BIGSERIAL PRIMARY KEY,
-    event_id BIGINT NOT NULL REFERENCES events(id) ON DELETE RESTRICT,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+    showtime_id BIGINT NOT NULL REFERENCES showtimes(id) ON DELETE RESTRICT,
     reservation_id BIGINT NOT NULL REFERENCES reservations(id) ON DELETE RESTRICT,
     seat_id BIGINT NOT NULL REFERENCES seats(id) ON DELETE RESTRICT,
     payment_id BIGINT NOT NULL REFERENCES payments(id) ON DELETE RESTRICT,
@@ -132,7 +131,7 @@ CREATE TABLE tickets (
     ticket_status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (ticket_status IN ('active', 'used', 'cancelled', 'refunded', 'invalidated')),
     issued_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     validated_at TIMESTAMPTZ,
-    UNIQUE (event_id, seat_id)
+    UNIQUE (showtime_id, seat_id)
 );
 
 CREATE TABLE notifications (
@@ -158,11 +157,13 @@ CREATE TABLE admin_action_logs (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_events_discovery ON events (publish_status, category, start_time);
-CREATE INDEX idx_events_title_search ON events (title);
+CREATE INDEX idx_movies_discovery ON movies (movie_status, genre, title);
+CREATE INDEX idx_cinemas_city_lookup ON cinemas (city, cinema_status);
+CREATE INDEX idx_showtimes_movie_lookup ON showtimes (movie_id, starts_at);
+CREATE INDEX idx_showtimes_hall_lookup ON showtimes (hall_id, starts_at);
 CREATE INDEX idx_reservations_user_lookup ON reservations (user_id, created_at DESC);
-CREATE INDEX idx_reservations_event_lookup ON reservations (event_id, reservation_status);
-CREATE INDEX idx_reservation_seats_event_seat_lookup ON reservation_seats (event_id, seat_id);
+CREATE INDEX idx_reservations_showtime_lookup ON reservations (showtime_id, reservation_status);
+CREATE INDEX idx_reservation_seats_showtime_seat_lookup ON reservation_seats (showtime_id, seat_id);
 CREATE INDEX idx_payments_provider_reference ON payments (provider_reference);
 CREATE INDEX idx_tickets_qr_hash ON tickets (qr_hash);
 CREATE INDEX idx_notifications_user_lookup ON notifications (user_id, created_at DESC);

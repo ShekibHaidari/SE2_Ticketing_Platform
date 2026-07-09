@@ -6,35 +6,37 @@ import { jsonOk } from "../../shared/http";
 
 const router = Router();
 
-type WaitingRoomJoinRequest = {
+type WaitingRoomRequest = {
+  showtimeId?: number;
   eventId?: number;
   userId?: number;
 };
 
-function waitingRoomKey(eventId: number, userId: number) {
-  return `waiting_room:${eventId}:${userId}`;
+function waitingRoomKey(showtimeId: number, userId: number) {
+  return `waiting_room:${showtimeId}:${userId}`;
 }
 
 router.post("/join", asyncHandler(async (req, res) => {
-  const { eventId, userId } = req.body as WaitingRoomJoinRequest;
+  const { showtimeId, eventId, userId } = req.body as WaitingRoomRequest;
+  const effectiveShowtimeId = Number(showtimeId ?? eventId);
 
-  if (!eventId || !userId) {
-    throw new AppError(400, "eventId and userId are required.");
+  if (!effectiveShowtimeId || !userId) {
+    throw new AppError(400, "showtimeId and userId are required.");
   }
 
   const redis = await getRedisClient();
-  const key = waitingRoomKey(Number(eventId), Number(userId));
-
-  await redis.set(key, JSON.stringify({
-    admitted: true,
-    queuePosition: 0,
-    joinedAt: new Date().toISOString(),
-  }), {
-    EX: 600,
-  });
+  await redis.set(
+    waitingRoomKey(effectiveShowtimeId, Number(userId)),
+    JSON.stringify({
+      admitted: true,
+      queuePosition: 0,
+      joinedAt: new Date().toISOString(),
+    }),
+    { EX: 600 },
+  );
 
   jsonOk(res, {
-    eventId: Number(eventId),
+    showtimeId: effectiveShowtimeId,
     userId: Number(userId),
     admitted: true,
     queuePosition: 0,
@@ -43,19 +45,19 @@ router.post("/join", asyncHandler(async (req, res) => {
 }));
 
 router.get("/status", asyncHandler(async (req, res) => {
-  const eventId = Number(req.query.eventId);
+  const effectiveShowtimeId = Number(req.query.showtimeId ?? req.query.eventId);
   const userId = Number(req.query.userId);
 
-  if (!eventId || !userId) {
-    throw new AppError(400, "eventId and userId query parameters are required.");
+  if (!effectiveShowtimeId || !userId) {
+    throw new AppError(400, "showtimeId and userId query parameters are required.");
   }
 
   const redis = await getRedisClient();
-  const value = await redis.get(waitingRoomKey(eventId, userId));
+  const raw = await redis.get(waitingRoomKey(effectiveShowtimeId, userId));
 
-  if (!value) {
+  if (!raw) {
     jsonOk(res, {
-      eventId,
+      showtimeId: effectiveShowtimeId,
       userId,
       admitted: false,
       queuePosition: null,
@@ -65,19 +67,14 @@ router.get("/status", asyncHandler(async (req, res) => {
     return;
   }
 
-  const parsed = JSON.parse(value) as {
-    admitted: boolean;
-    queuePosition: number;
-    joinedAt: string;
-  };
-
+  const value = JSON.parse(raw) as { admitted: boolean; queuePosition: number };
   jsonOk(res, {
-    eventId,
+    showtimeId: effectiveShowtimeId,
     userId,
-    admitted: parsed.admitted,
-    queuePosition: parsed.queuePosition,
+    admitted: value.admitted,
+    queuePosition: value.queuePosition,
     estimatedWaitSeconds: 0,
-    status: parsed.admitted ? "admitted" : "queued",
+    status: value.admitted ? "admitted" : "queued",
   });
 }));
 

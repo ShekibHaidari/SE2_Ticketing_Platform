@@ -1,59 +1,53 @@
 import { Router } from "express";
-import { asyncHandler } from "../../shared/asyncHandler";
 import { query } from "../../config/db";
-import { AppError } from "../../shared/errors";
+import { asyncHandler } from "../../shared/asyncHandler";
 import { hashPassword, verifyPassword } from "../../shared/auth";
+import { AppError } from "../../shared/errors";
 import { jsonOk, requireAuth, signToken } from "../../shared/http";
+import { toAuthUser } from "../../shared/roles";
 import type { AuthenticatedRequest, UserRow } from "../../shared/types";
 
 const router = Router();
 
 router.post("/register", asyncHandler(async (req, res) => {
-  const { fullName, email, password, phoneNumber } = req.body;
+  const { fullName, email, password, phoneNumber } = req.body as Record<string, unknown>;
 
   if (!fullName || !email || !password) {
-    throw new AppError(400, "fullName, email, and password are required.");
+    throw new AppError(400, "نام، ایمیل و رمز عبور الزامی است.");
   }
 
-  const existing = await query(`SELECT id FROM users WHERE email = $1`, [email]);
-
+  const existing = await query<{ id: number }>(`SELECT id FROM users WHERE email = $1`, [email]);
   if (existing.rowCount) {
-    throw new AppError(409, "A user with this email already exists.");
+    throw new AppError(409, "کاربری با این ایمیل قبلاً ثبت شده است.");
   }
 
-  const passwordHash = await hashPassword(password);
+  const passwordHash = await hashPassword(String(password));
   const result = await query<UserRow>(
     `
       INSERT INTO users (full_name, email, phone_number, password_hash, role)
       VALUES ($1, $2, $3, $4, 'customer')
       RETURNING id, full_name, email, phone_number, password_hash, role, account_status
     `,
-    [fullName, email, phoneNumber ?? null, passwordHash],
+    [String(fullName), String(email), phoneNumber ? String(phoneNumber) : null, passwordHash],
   );
 
   const user = result.rows[0];
-  const token = signToken({
-    userId: user.id,
-    email: user.email,
-    role: user.role,
-  });
+  const token = signToken({ userId: user.id, email: user.email, role: user.role });
 
   jsonOk(res, {
-    accessToken: token,
-    user: {
-      id: user.id,
-      fullName: user.full_name,
-      email: user.email,
-      role: user.role,
+    ok: true,
+    data: {
+      user: toAuthUser(user),
+      token,
     },
   }, 201);
 }));
 
 router.post("/login", asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password } = req.body as Record<string, unknown>;
 
   if (!email || !password) {
-    throw new AppError(400, "email and password are required.");
+    throw new AppError(400, "ایمیل و رمز عبور الزامی است.");
   }
 
   const result = await query<UserRow>(
@@ -62,41 +56,27 @@ router.post("/login", asyncHandler(async (req, res) => {
       FROM users
       WHERE email = $1
     `,
-    [email],
+    [String(email)],
   );
 
-  if (!result.rowCount) {
-    throw new AppError(401, "Invalid email or password.");
+  if (!result.rowCount || !(await verifyPassword(String(password), result.rows[0].password_hash))) {
+    throw new AppError(401, "ایمیل یا رمز عبور نادرست است.");
   }
 
   const user = result.rows[0];
-  const valid = await verifyPassword(password, user.password_hash);
-
-  if (!valid) {
-    throw new AppError(401, "Invalid email or password.");
-  }
-
-  const token = signToken({
-    userId: user.id,
-    email: user.email,
-    role: user.role,
-  });
+  const token = signToken({ userId: user.id, email: user.email, role: user.role });
 
   jsonOk(res, {
-    accessToken: token,
-    user: {
-      id: user.id,
-      fullName: user.full_name,
-      email: user.email,
-      role: user.role,
+    ok: true,
+    data: {
+      user: toAuthUser(user),
+      token,
     },
   });
 }));
 
 router.get("/me", requireAuth, asyncHandler(async (req, res) => {
-  const authReq = req as AuthenticatedRequest;
-  const userId = authReq.authUser?.userId;
-
+  const userId = (req as AuthenticatedRequest).authUser?.userId;
   const result = await query<UserRow>(
     `
       SELECT id, full_name, email, phone_number, password_hash, role, account_status
@@ -107,17 +87,13 @@ router.get("/me", requireAuth, asyncHandler(async (req, res) => {
   );
 
   if (!result.rowCount) {
-    throw new AppError(404, "User not found.");
+    throw new AppError(404, "کاربر پیدا نشد.");
   }
 
   const user = result.rows[0];
   jsonOk(res, {
-    id: user.id,
-    fullName: user.full_name,
-    email: user.email,
-    phoneNumber: user.phone_number,
-    role: user.role,
-    accountStatus: user.account_status,
+    ok: true,
+    data: toAuthUser(user),
   });
 }));
 

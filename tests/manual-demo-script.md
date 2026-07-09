@@ -1,40 +1,46 @@
-# Manual Demo Script
+# Persian Cinema Demo Script
 
-## Goal
+## هدف
 
-Demonstrate the main MVP booking flow from login to ticket creation.
+نمایش یک نسخه قابل اجرا از سامانه فروش بلیت سینما با رابط فارسی، قفل صندلی، پرداخت آزمایشی و اعتبارسنجی بلیت.
 
-## Steps
+## مراحل اجرای دمو
 
-1. Start the stack:
+1. استک را اجرا کنید:
    `cd infra/docker && cp .env.example .env && docker compose up --build`
-2. Open the frontend:
+2. مرورگر را باز کنید:
    `http://localhost:8080`
-3. Login as:
+3. به عنوان خریدار وارد شوید:
    `customer@example.com / password123`
-4. Click `Load Events`.
-5. Select `Kabul Live Music Night`.
-6. Click `Load Seat Map`.
-7. Choose one available seat.
-8. Click `Lock Selected Seat`.
-9. Click `Create Checkout`.
-10. Click `Mock Success`.
-11. Click `Load My Tickets`.
-12. Click `Load Notifications`.
-13. Click `Load Summary` to show admin counts.
+4. روی `بارگذاری فیلم‌ها` کلیک کنید.
+5. یکی از فیلم‌ها را انتخاب کنید.
+6. از بخش سانس‌ها، یک سانس را انتخاب کنید.
+7. روی `نمایش نقشه صندلی` کلیک کنید.
+8. یک صندلی آزاد انتخاب کنید.
+9. روی `قفل صندلی و ادامه پرداخت` کلیک کنید.
+10. روی `رفتن به پرداخت` و سپس `پرداخت موفق آزمایشی` کلیک کنید.
+11. از بخش `بلیت‌های من` بلیت صادرشده را ببینید.
+12. از بخش `اعلان‌ها` پیام صدور بلیت را بررسی کنید.
 
-## Failure Demo
+## دمو برای کارمند کنترل بلیت
 
-1. Repeat the flow until checkout is created.
-2. Click `Mock Fail` instead of success.
-3. Confirm the reservation is cancelled and the seat returns to available state.
+1. کد یکی از بلیت‌های صادرشده را کپی کنید.
+2. در بخش `کنترل بلیت` آن را وارد کنید.
+3. روی `بررسی بلیت` کلیک کنید.
+4. نتیجه باید یکی از این حالت‌ها باشد:
+   `معتبر`، `قبلاً استفاده شده`، `نامعتبر`
 
-## Concurrency Demo
+## دمو برای مدیر سینما و مدیر سیستم
 
-Run:
+1. داشبورد مدیر سینما را بارگذاری کنید.
+2. گزارش فروش را باز کنید.
+3. داشبورد مدیر سیستم را باز کنید.
+4. لینک‌های RabbitMQ، Prometheus و Grafana را بررسی کنید.
+
+## تست همزمانی
 
 ```bash
 node tests/concurrency-demo.js
 ```
 
-This script attempts to lock the same seat concurrently and shows that only one request should succeed.
+این اسکریپت تلاش می‌کند یک صندلی را برای یک سانس به صورت همزمان چند بار قفل کند و نشان می‌دهد که فقط یک درخواست باید موفق باشد.

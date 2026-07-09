@@ -11,17 +11,20 @@ import { cancelReservation, getReservationSeatIds, releaseSeatLocks } from "../r
 
 const router = Router();
 
-type ExistingPaymentRow = {
+type PaymentStateRow = {
   id: number;
+  reservation_id: number;
   payment_status: string;
-  provider_reference: string;
+  amount: string;
+  provider_reference?: string;
 };
 
-type PaymentTicketRow = {
+type ReservationStateRow = {
   id: number;
-  ticket_number: string;
-  qr_hash: string;
-  qr_code_data_url: string;
+  showtime_id: number;
+  user_id: number;
+  reservation_status: string;
+  total_amount: string;
 };
 
 type CreatedTicketRow = {
@@ -42,13 +45,9 @@ router.post("/checkout", asyncHandler(async (req, res) => {
   }
 
   const result = await withTransaction(async (client) => {
-    const reservationResult = await client.query<{
-      id: number;
-      reservation_status: string;
-      total_amount: string;
-    }>(
+    const reservationResult = await client.query<ReservationStateRow>(
       `
-        SELECT id, reservation_status, total_amount
+        SELECT id, showtime_id, user_id, reservation_status, total_amount
         FROM reservations
         WHERE id = $1
       `,
@@ -56,13 +55,13 @@ router.post("/checkout", asyncHandler(async (req, res) => {
     );
 
     if (!reservationResult.rowCount) {
-      throw new AppError(404, "Reservation not found.");
+      throw new AppError(404, "رزرو پیدا نشد.");
     }
 
     const reservation = reservationResult.rows[0];
 
     if (!["locked", "checkout_in_progress"].includes(reservation.reservation_status)) {
-      throw new AppError(409, "Reservation is not ready for checkout.");
+      throw new AppError(409, "رزرو برای پرداخت آماده نیست.");
     }
 
     await client.query(
@@ -75,9 +74,9 @@ router.post("/checkout", asyncHandler(async (req, res) => {
       [reservationId],
     );
 
-    const existingPayment = await client.query<ExistingPaymentRow>(
+    const existingPayment = await client.query<PaymentStateRow>(
       `
-        SELECT id, payment_status, provider_reference
+        SELECT id, reservation_id, payment_status, amount, provider_reference
         FROM payments
         WHERE reservation_id = $1
       `,
@@ -89,7 +88,7 @@ router.post("/checkout", asyncHandler(async (req, res) => {
         paymentId: existingPayment.rows[0].id,
         paymentStatus: existingPayment.rows[0].payment_status,
         providerReference: existingPayment.rows[0].provider_reference,
-        amount: Number(reservation.total_amount),
+        amount: Number(existingPayment.rows[0].amount),
       };
     }
 
@@ -104,7 +103,7 @@ router.post("/checkout", asyncHandler(async (req, res) => {
           amount,
           currency
         )
-        VALUES ($1, $2, $3, 'pending', $4, 'USD')
+        VALUES ($1, $2, $3, 'pending', $4, 'AFN')
         RETURNING id
       `,
       [reservationId, paymentProvider, providerReference, Number(reservation.total_amount)],
@@ -119,7 +118,7 @@ router.post("/checkout", asyncHandler(async (req, res) => {
   });
 
   jsonOk(res, {
-    message: "Mock checkout created. Use the mock success or mock fail endpoints to finish the flow.",
+    message: "درخواست پرداخت آزمایشی ایجاد شد.",
     ...result,
     nextActions: {
       successUrl: `/api/payments/mock-success/${result.paymentId}`,
@@ -132,12 +131,7 @@ router.post("/payments/mock-success/:paymentId", asyncHandler(async (req, res) =
   const paymentId = Number(req.params.paymentId);
 
   const result = await withTransaction(async (client) => {
-    const paymentResult = await client.query<{
-      id: number;
-      reservation_id: number;
-      payment_status: string;
-      amount: string;
-    }>(
+    const paymentResult = await client.query<PaymentStateRow>(
       `
         SELECT id, reservation_id, payment_status, amount
         FROM payments
@@ -147,13 +141,13 @@ router.post("/payments/mock-success/:paymentId", asyncHandler(async (req, res) =
     );
 
     if (!paymentResult.rowCount) {
-      throw new AppError(404, "Payment not found.");
+      throw new AppError(404, "پرداخت پیدا نشد.");
     }
 
     const payment = paymentResult.rows[0];
 
     if (payment.payment_status === "success") {
-      const tickets = await client.query<PaymentTicketRow>(
+      const existingTickets = await client.query<CreatedTicketRow>(
         `
           SELECT id, ticket_number, qr_hash, qr_code_data_url
           FROM tickets
@@ -163,12 +157,9 @@ router.post("/payments/mock-success/:paymentId", asyncHandler(async (req, res) =
         [paymentId],
       );
 
-      const reservationDetails = await client.query<{
-        event_id: number;
-        user_id: number;
-      }>(
+      const reservation = await client.query<ReservationStateRow>(
         `
-          SELECT event_id, user_id
+          SELECT id, showtime_id, user_id, reservation_status, total_amount
           FROM reservations
           WHERE id = $1
         `,
@@ -180,21 +171,16 @@ router.post("/payments/mock-success/:paymentId", asyncHandler(async (req, res) =
       return {
         paymentId,
         reservationId: payment.reservation_id,
-        eventId: reservationDetails.rows[0].event_id,
-        userId: reservationDetails.rows[0].user_id,
+        showtimeId: reservation.rows[0].showtime_id,
+        userId: reservation.rows[0].user_id,
         seatIds: seatRows.map((seat) => seat.seat_id),
-        tickets: tickets.rows,
+        tickets: existingTickets.rows,
       };
     }
 
-    const reservationResult = await client.query<{
-      id: number;
-      event_id: number;
-      user_id: number;
-      reservation_status: string;
-    }>(
+    const reservationResult = await client.query<ReservationStateRow>(
       `
-        SELECT id, event_id, user_id, reservation_status
+        SELECT id, showtime_id, user_id, reservation_status, total_amount
         FROM reservations
         WHERE id = $1
       `,
@@ -202,11 +188,10 @@ router.post("/payments/mock-success/:paymentId", asyncHandler(async (req, res) =
     );
 
     if (!reservationResult.rowCount) {
-      throw new AppError(404, "Reservation not found for payment.");
+      throw new AppError(404, "رزرو برای این پرداخت پیدا نشد.");
     }
 
     const reservation = reservationResult.rows[0];
-
     const seatRows = await getReservationSeatIds(client, reservation.id);
 
     await client.query(
@@ -234,14 +219,15 @@ router.post("/payments/mock-success/:paymentId", asyncHandler(async (req, res) =
     const createdTickets: CreatedTicketRow[] = [];
 
     for (const seat of seatRows) {
-      const ticketCode = `TKT-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+      const ticketCode = `CIN-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
       const qrHash = crypto.createHash("sha256").update(`${reservation.id}:${seat.seat_id}:${ticketCode}`).digest("hex");
       const qrCodeDataUrl = await QRCode.toDataURL(qrHash);
 
       const ticketResult = await client.query<CreatedTicketRow>(
         `
           INSERT INTO tickets (
-            event_id,
+            user_id,
+            showtime_id,
             reservation_id,
             seat_id,
             payment_id,
@@ -250,21 +236,19 @@ router.post("/payments/mock-success/:paymentId", asyncHandler(async (req, res) =
             qr_code_data_url,
             ticket_status
           )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, 'active')
-          ON CONFLICT (event_id, seat_id) DO NOTHING
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'active')
+          ON CONFLICT (showtime_id, seat_id) DO NOTHING
           RETURNING id, ticket_number, qr_hash, qr_code_data_url
         `,
-        [reservation.event_id, reservation.id, seat.seat_id, paymentId, ticketCode, qrHash, qrCodeDataUrl],
+        [reservation.user_id, reservation.showtime_id, reservation.id, seat.seat_id, paymentId, ticketCode, qrHash, qrCodeDataUrl],
       );
 
       if (!ticketResult.rowCount) {
-        throw new AppError(409, "A ticket already exists for one of the selected seats.");
+        throw new AppError(409, "برای یکی از صندلی‌ها قبلاً بلیت صادر شده است.");
       }
 
       createdTickets.push(ticketResult.rows[0]);
     }
-
-    const firstTicketId = Number(createdTickets[0].id);
 
     await client.query(
       `
@@ -278,14 +262,14 @@ router.post("/payments/mock-success/:paymentId", asyncHandler(async (req, res) =
           payload,
           sent_at
         )
-        VALUES ($1, $2, $3, 'email', 'ticket_issued', 'sent', $4::jsonb, NOW())
+        VALUES ($1, $2, $3, 'sms', 'ticket_issued', 'sent', $4::jsonb, NOW())
       `,
       [
         reservation.user_id,
         reservation.id,
-        firstTicketId,
+        createdTickets[0].id,
         JSON.stringify({
-          message: "Your booking has been confirmed and tickets were generated.",
+          message: "پرداخت شما با موفقیت انجام شد و بلیت صادر گردید.",
           paymentId,
           ticketCount: createdTickets.length,
         }),
@@ -295,30 +279,20 @@ router.post("/payments/mock-success/:paymentId", asyncHandler(async (req, res) =
     return {
       paymentId,
       reservationId: reservation.id,
-      eventId: reservation.event_id,
+      showtimeId: reservation.showtime_id,
       userId: reservation.user_id,
+      seatIds: seatRows.map((seat) => seat.seat_id),
       tickets: createdTickets,
-      seatIds: seatRows.map((seat: { event_id: number; seat_id: number }) => seat.seat_id),
     };
   });
 
-  await releaseSeatLocks(result.eventId, result.seatIds);
-  await publishEvent("PaymentSucceeded", {
-    paymentId: result.paymentId,
-    reservationId: result.reservationId,
-  });
-  await publishEvent("TicketIssued", {
-    paymentId: result.paymentId,
-    reservationId: result.reservationId,
-    ticketCount: result.tickets.length,
-  });
-  await publishEvent("NotificationCreated", {
-    reservationId: result.reservationId,
-    userId: result.userId,
-  });
+  await releaseSeatLocks(result.showtimeId, result.seatIds);
+  await publishEvent("PaymentSucceeded", { paymentId: result.paymentId, reservationId: result.reservationId });
+  await publishEvent("TicketIssued", { paymentId: result.paymentId, reservationId: result.reservationId, ticketCount: result.tickets.length });
+  await publishEvent("NotificationCreated", { reservationId: result.reservationId, userId: result.userId });
 
   jsonOk(res, {
-    message: "Mock payment marked as successful. Reservation confirmed and tickets generated.",
+    message: "پرداخت با موفقیت ثبت شد و بلیت صادر گردید.",
     paymentId: result.paymentId,
     reservationId: result.reservationId,
     tickets: result.tickets,
@@ -327,14 +301,9 @@ router.post("/payments/mock-success/:paymentId", asyncHandler(async (req, res) =
 
 router.post("/payments/mock-fail/:paymentId", asyncHandler(async (req, res) => {
   const paymentId = Number(req.params.paymentId);
-
-  const paymentResult = await query<{
-    id: number;
-    reservation_id: number;
-    payment_status: string;
-  }>(
+  const paymentResult = await query<PaymentStateRow>(
     `
-      SELECT id, reservation_id, payment_status
+      SELECT id, reservation_id, payment_status, amount
       FROM payments
       WHERE id = $1
     `,
@@ -342,13 +311,13 @@ router.post("/payments/mock-fail/:paymentId", asyncHandler(async (req, res) => {
   );
 
   if (!paymentResult.rowCount) {
-    throw new AppError(404, "Payment not found.");
+    throw new AppError(404, "پرداخت پیدا نشد.");
   }
 
   const payment = paymentResult.rows[0];
 
   if (payment.payment_status === "success") {
-    throw new AppError(409, "Successful payments cannot be changed to failed.");
+    throw new AppError(409, "پرداخت موفق قابل برگشت آزمایشی نیست.");
   }
 
   await query(
@@ -364,22 +333,29 @@ router.post("/payments/mock-fail/:paymentId", asyncHandler(async (req, res) => {
 
   const cancelled = await cancelReservation(payment.reservation_id, "failed");
   paymentFailureCounter.inc();
-  await publishEvent("PaymentFailed", {
-    paymentId,
-    reservationId: payment.reservation_id,
-  });
+  await publishEvent("PaymentFailed", { paymentId, reservationId: payment.reservation_id });
 
   jsonOk(res, {
-    message: "Mock payment marked as failed. Reservation cancelled and seat locks released.",
+    message: "پرداخت ناموفق شد و صندلی‌ها آزاد شدند.",
     paymentId,
     reservationId: payment.reservation_id,
-    eventId: cancelled.reservation.event_id,
+    showtimeId: cancelled.reservation.showtime_id,
   });
 }));
 
 router.get("/payments/:paymentId", asyncHandler(async (req, res) => {
   const paymentId = Number(req.params.paymentId);
-  const result = await query(
+  const result = await query<{
+    id: number;
+    reservation_id: number;
+    payment_provider: string;
+    provider_reference: string;
+    payment_status: string;
+    amount: string;
+    currency: string;
+    callback_received_at: string | null;
+    paid_at: string | null;
+  }>(
     `
       SELECT
         id,
@@ -398,7 +374,7 @@ router.get("/payments/:paymentId", asyncHandler(async (req, res) => {
   );
 
   if (!result.rowCount) {
-    throw new AppError(404, "Payment not found.");
+    throw new AppError(404, "پرداخت پیدا نشد.");
   }
 
   const row = result.rows[0];

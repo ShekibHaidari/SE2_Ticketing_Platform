@@ -1,27 +1,16 @@
 import { Router } from "express";
+import { query } from "../../config/db";
 import { asyncHandler } from "../../shared/asyncHandler";
 import { AppError } from "../../shared/errors";
 import { jsonOk } from "../../shared/http";
-import { query } from "../../config/db";
-import {
-  cancelReservation,
-  createReservationWithLocks,
-  expireReservationIfNeeded,
-} from "./service";
 import { reservationLockFailureCounter } from "../../shared/metrics";
+import { cancelReservation, createReservationWithLocks, expireReservationIfNeeded } from "./service";
 
 const router = Router();
 
-type ReservationSeatResponseRow = {
-  seat_id: number;
-  price_at_lock: string;
-  row_label: string;
-  seat_number: string;
-};
-
 type ReservationDetailsRow = {
   id: number;
-  event_id: number;
+  showtime_id: number;
   user_id: number;
   reservation_code: string;
   reservation_status: string;
@@ -31,30 +20,42 @@ type ReservationDetailsRow = {
   payment_status: string | null;
 };
 
+type ReservationSeatRow = {
+  seat_id: number;
+  price_at_lock: string;
+  row_label: string;
+  seat_number: string;
+};
+
 router.post("/lock-seat", asyncHandler(async (req, res) => {
-  const { eventId, userId, seatIds } = req.body as {
+  const { showtimeId, eventId, userId, seatIds } = req.body as {
+    showtimeId?: number;
     eventId?: number;
     userId?: number;
     seatIds?: number[];
   };
 
-  if (!eventId || !userId || !Array.isArray(seatIds) || seatIds.length === 0) {
-    throw new AppError(400, "eventId, userId, and seatIds are required.");
+  const effectiveShowtimeId = Number(showtimeId ?? eventId);
+
+  if (!effectiveShowtimeId || !userId || !Array.isArray(seatIds) || seatIds.length === 0) {
+    throw new AppError(400, "showtimeId, userId, and seatIds are required.");
   }
 
   try {
-    const reservation = await createReservationWithLocks(eventId, userId, seatIds.map(Number));
+    const reservation = await createReservationWithLocks(effectiveShowtimeId, userId, seatIds.map(Number));
     jsonOk(res, {
       reservationId: reservation.reservationId,
       reservationCode: reservation.reservationCode,
       reservationStatus: "locked",
       lockedUntil: reservation.lockedUntil.toISOString(),
       totalAmount: reservation.totalAmount,
+      showtimeId: effectiveShowtimeId,
       seats: reservation.seats.map((seat) => ({
         seatId: seat.seat_id,
         rowLabel: seat.row_label,
         seatNumber: seat.seat_number,
-        price: Number(seat.base_price),
+        sectionName: seat.section_name,
+        price: Number(seat.price),
       })),
     }, 201);
   } catch (error) {
@@ -71,7 +72,7 @@ router.get("/:reservationId", asyncHandler(async (req, res) => {
     `
       SELECT
         r.id,
-        r.event_id,
+        r.showtime_id,
         r.user_id,
         r.reservation_code,
         r.reservation_status,
@@ -87,10 +88,10 @@ router.get("/:reservationId", asyncHandler(async (req, res) => {
   );
 
   if (!result.rowCount) {
-    throw new AppError(404, "Reservation not found.");
+    throw new AppError(404, "رزرو مورد نظر پیدا نشد.");
   }
 
-  const seats = await query<ReservationSeatResponseRow>(
+  const seats = await query<ReservationSeatRow>(
     `
       SELECT
         rs.seat_id,
@@ -108,7 +109,7 @@ router.get("/:reservationId", asyncHandler(async (req, res) => {
   const row = result.rows[0];
   jsonOk(res, {
     reservationId: row.id,
-    eventId: row.event_id,
+    showtimeId: row.showtime_id,
     userId: row.user_id,
     reservationCode: row.reservation_code,
     reservationStatus: row.reservation_status,
@@ -116,7 +117,7 @@ router.get("/:reservationId", asyncHandler(async (req, res) => {
     totalAmount: Number(row.total_amount),
     paymentId: row.payment_id,
     paymentStatus: row.payment_status,
-    seats: seats.rows.map((seat: ReservationSeatResponseRow) => ({
+    seats: seats.rows.map((seat) => ({
       seatId: seat.seat_id,
       rowLabel: seat.row_label,
       seatNumber: seat.seat_number,
@@ -129,16 +130,15 @@ router.post("/:reservationId/cancel", asyncHandler(async (req, res) => {
   const reservationId = Number(req.params.reservationId);
   const cancelled = await cancelReservation(reservationId, "cancelled");
   jsonOk(res, {
-    message: "Reservation cancelled and seat locks released.",
+    message: "رزرو لغو شد و صندلی‌ها آزاد شدند.",
     reservationId,
-    eventId: cancelled.reservation.event_id,
+    showtimeId: cancelled.reservation.showtime_id,
   });
 }));
 
 router.post("/:reservationId/release-expired", asyncHandler(async (req, res) => {
   const reservationId = Number(req.params.reservationId);
-  const result = await expireReservationIfNeeded(reservationId);
-  jsonOk(res, result);
+  jsonOk(res, await expireReservationIfNeeded(reservationId));
 }));
 
 export default router;

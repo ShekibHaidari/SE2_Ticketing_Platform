@@ -12,43 +12,37 @@ async function api(path, options = {}) {
   const text = await response.text();
   const data = text ? JSON.parse(text) : null;
 
-  return {
-    ok: response.ok,
-    status: response.status,
-    data,
-  };
+  return { ok: response.ok, status: response.status, data };
 }
 
 async function main() {
-  console.log("Resetting demo data...");
+  console.log("در حال بازنشانی داده‌های نمایشی...");
   await api("/api/admin/seed-demo-reset", { method: "POST" });
 
-  const eventResponse = await api("/api/events");
-  const events = eventResponse.data;
+  const showtimeResponse = await api("/api/showtimes");
+  const showtimes = showtimeResponse.data;
 
-  if (!Array.isArray(events) || !events.length) {
-    throw new Error("No events available.");
+  if (!Array.isArray(showtimes) || !showtimes.length) {
+    throw new Error("هیچ سانسی برای آزمایش پیدا نشد.");
   }
 
-  const eventId = events[0].id;
-  const venueId = events[0].venue.id;
-  const seatMapResponse = await api(`/api/venues/${venueId}/seat-map?eventId=${eventId}`);
-  const hall = seatMapResponse.data.halls[0];
-  const section = hall.sections[0];
+  const showtime = showtimes[0];
+  const seatMapResponse = await api(`/api/showtimes/${showtime.id}/seat-map`);
+  const section = seatMapResponse.data.sections[0];
   const seat = section.seats.find((item) => item.state === "available");
 
   if (!seat) {
-    throw new Error("No available seat found for concurrency demo.");
+    throw new Error("صندلی آزادی برای تست همزمانی پیدا نشد.");
   }
 
-  console.log(`Testing concurrent locks for event ${eventId} on seat ${seat.seatId}...`);
+  console.log(`آزمایش قفل همزمان برای سانس ${showtime.id} و صندلی ${seat.seatId} شروع شد...`);
 
   const attempts = Array.from({ length: 6 }).map((_, index) =>
     api("/api/reservations/lock-seat", {
       method: "POST",
       body: JSON.stringify({
-        eventId,
-        userId: 3,
+        showtimeId: showtime.id,
+        userId: 4,
         seatIds: [seat.seatId],
       }),
     }).then((result) => ({
@@ -64,17 +58,17 @@ async function main() {
   const failureCount = results.length - successCount;
 
   console.table(results);
-  console.log(`Successful locks: ${successCount}`);
-  console.log(`Failed locks: ${failureCount}`);
+  console.log(`قفل‌های موفق: ${successCount}`);
+  console.log(`قفل‌های ناموفق: ${failureCount}`);
 
   if (successCount === 1) {
-    console.log("Concurrency demo passed: only one lock succeeded.");
+    console.log("نتیجه صحیح است: فقط یک درخواست موفق شد.");
   } else {
-    console.log("Concurrency demo warning: expected exactly one successful lock.");
+    console.log("هشدار: انتظار می‌رفت فقط یک قفل موفق ثبت شود.");
   }
 }
 
 main().catch((error) => {
-  console.error("Concurrency demo failed:", error);
+  console.error("خطا در اجرای تست همزمانی:", error);
   process.exit(1);
 });
