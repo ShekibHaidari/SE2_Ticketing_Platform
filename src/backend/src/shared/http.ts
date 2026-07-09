@@ -2,6 +2,7 @@ import type { NextFunction, Response } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 import { AppError } from "./errors";
+import { normalizeRole } from "./roles";
 import type { AuthPayload, AuthenticatedRequest } from "./types";
 
 export function jsonOk(res: Response, data: unknown, statusCode = 200) {
@@ -33,4 +34,21 @@ export function requireAuth(
   } catch (error) {
     return next(new AppError(401, "Invalid or expired token."));
   }
+}
+
+export function requireRoles(...allowedRoles: string[]) {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    requireAuth(req, res, (error?: unknown) => {
+      if (error) {
+        return next(error);
+      }
+
+      const currentRole = normalizeRole(req.authUser?.role ?? "");
+      if (!allowedRoles.includes(currentRole)) {
+        return next(new AppError(403, "شما اجازه دسترسی به این بخش را ندارید."));
+      }
+
+      return next();
+    });
+  };
 }

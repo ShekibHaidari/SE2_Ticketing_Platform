@@ -19,10 +19,10 @@
         </div>
       </nav>
       <div class="hero__content">
-        <h1>ورود نقش‌محور برای خریدار، مدیر سینما، کارمند و مدیر سیستم</h1>
+        <h1>پنل فارسی فروش بلیت با مدیریت واقعی فیلم، سالن و سانس</h1>
         <p>
-          در این فاز، ورود و ناوبری بر اساس نقش انجام می‌شود و جریان‌های موجود
-          فیلم، سانس، رزرو، کنترل بلیت و مدیریت سیستم بدون حذف شدن حفظ می‌شوند.
+          مشتری همچنان می‌تواند فیلم و سانس را ببیند و خرید انجام دهد، و مدیر
+          سینما حالا می‌تواند محتوای واقعی سینما را ثبت و مدیریت کند.
         </p>
       </div>
     </header>
@@ -62,11 +62,11 @@
         <div class="cards-grid">
           <article class="feature-card">
             <h3>فیلم‌های در حال اکران</h3>
-            <p>لیست فیلم‌ها و فیلتر شهر و ژانر را از اینجا بررسی کنید.</p>
+            <p>فیلم‌های منتشرشده مدیران در این بخش نمایش داده می‌شوند.</p>
           </article>
           <article class="feature-card">
             <h3>انتخاب سانس و صندلی</h3>
-            <p>بعد از انتخاب فیلم، سانس و صندلی خود را رزرو و برای پرداخت آماده کنید.</p>
+            <p>سانس‌های منتشرشده، نقشه صندلی و رزرو موقت همچنان فعال هستند.</p>
           </article>
           <article class="feature-card">
             <h3>بلیت‌های من</h3>
@@ -75,25 +75,13 @@
         </div>
       </section>
 
-      <section id="managerOverview" class="card dashboard-overview" data-role-scope="CINEMA_MANAGER">
+      <section id="managerOverview" class="card dashboard-overview" data-role-scope="CINEMA_MANAGER,ADMIN">
         <div class="section-head">
           <h2>داشبورد مدیر سینما</h2>
-          <button class="secondary" data-nav-target="managerSection">باز کردن ابزارهای مدیر</button>
+          <button id="loadManagerDashboardButton" class="secondary">به‌روزرسانی آمار</button>
         </div>
-        <div class="cards-grid">
-          <article class="feature-card">
-            <h3>مدیریت فیلم‌ها</h3>
-            <p>در این فاز، نمای مدیریت فیلم‌ها به‌صورت نمایشی و آماده توسعه بعدی نمایش داده می‌شود.</p>
-          </article>
-          <article class="feature-card">
-            <h3>مدیریت سانس‌ها و سالن‌ها</h3>
-            <p>برای برنامه‌ریزی سانس، بازبینی سالن‌ها و کنترل ظرفیت از داشبورد مدیر استفاده کنید.</p>
-          </article>
-          <article class="feature-card">
-            <h3>گزارش فروش</h3>
-            <p>آمار فروش و عملکرد هر فیلم را از گزارش فروش دریافت کنید.</p>
-          </article>
-        </div>
+        <div id="managerStatsCards" class="cards-grid"></div>
+        <pre id="managerDashboard" class="status-box">آمار پنل مدیر هنوز بارگذاری نشده است.</pre>
       </section>
 
       <section id="staffOverview" class="card dashboard-overview" data-role-scope="STAFF">
@@ -129,7 +117,7 @@
           </article>
           <article class="feature-card">
             <h3>مدیریت سینماها</h3>
-            <p>مشاهده داده‌های نمونه سینماها و مسیر توسعه پنل‌های بعدی.</p>
+            <p>علاوه بر پنل مدیر سینما، این بخش برای مرور وضعیت کلی سامانه باقی مانده است.</p>
           </article>
           <article class="feature-card">
             <h3>وضعیت سرویس و مانیتورینگ</h3>
@@ -224,19 +212,123 @@
         </section>
       </section>
 
-      <section class="layout" data-role-scope="CINEMA_MANAGER">
-        <section class="card" id="managerSection">
+      <section class="layout manager-layout" data-role-scope="CINEMA_MANAGER,ADMIN">
+        <section class="card" id="managerMoviesSection">
           <div class="section-head">
-            <h2>داشبورد مدیر سینما</h2>
-            <button id="loadManagerDashboardButton">بارگذاری داشبورد</button>
+            <h2 id="movieFormTitle">افزودن فیلم جدید</h2>
+            <div class="placeholder-actions">
+              <button id="saveMovieButton">ذخیره فیلم</button>
+              <button id="cancelMovieEditButton" class="ghost" hidden>لغو ویرایش</button>
+            </div>
           </div>
-          <div class="placeholder-actions">
-            <button class="ghost">مدیریت فیلم‌ها</button>
-            <button class="ghost">مدیریت سانس‌ها</button>
-            <button class="ghost">مدیریت سالن‌ها</button>
+          <input id="movieEditIdInput" type="hidden" />
+          <div class="form-grid">
+            <label>نام فیلم <input id="movieTitleInput" type="text" /></label>
+            <label>ژانر <input id="movieGenreInput" type="text" /></label>
+            <label>مدت زمان به دقیقه <input id="movieDurationInput" type="number" min="1" /></label>
+            <label>رده سنی <input id="movieAgeRatingInput" type="text" value="عمومی" /></label>
+            <label>زبان <input id="movieLanguageInput" type="text" value="دری" /></label>
+            <label>وضعیت
+              <select id="movieStatusInput">
+                <option value="PUBLISHED">منتشرشده</option>
+                <option value="DRAFT">پیش‌نویس</option>
+              </select>
+            </label>
           </div>
-          <pre id="managerDashboard" class="status-box">داشبورد مدیر هنوز بارگذاری نشده است.</pre>
-          <button id="loadSalesReportButton" class="secondary">گزارش فروش</button>
+          <label>توضیحات <textarea id="movieDescriptionInput" rows="4"></textarea></label>
+          <label>لینک پوستر <input id="moviePosterInput" type="url" placeholder="https://..." /></label>
+          <pre id="managerMovieStatus" class="status-box">هنوز فیلمی ثبت یا ویرایش نشده است.</pre>
+        </section>
+
+        <section class="card" id="managerMoviesListSection">
+          <div class="section-head">
+            <h2>فهرست فیلم‌های من</h2>
+            <button id="refreshManagerMoviesButton" class="secondary">بارگذاری دوباره</button>
+          </div>
+          <div id="managerMoviesList" class="list"></div>
+        </section>
+      </section>
+
+      <section class="layout manager-layout" data-role-scope="CINEMA_MANAGER,ADMIN">
+        <section class="card" id="managerCinemasSection">
+          <div class="section-head">
+            <h2>افزودن سینما</h2>
+            <button id="saveCinemaButton">ذخیره سینما</button>
+          </div>
+          <div class="form-grid">
+            <label>نام سینما <input id="cinemaNameInput" type="text" /></label>
+            <label>شهر <input id="cinemaCityInput" type="text" /></label>
+            <label>شماره تماس <input id="cinemaPhoneInput" type="text" /></label>
+          </div>
+          <label>آدرس <textarea id="cinemaAddressInput" rows="3"></textarea></label>
+          <pre id="managerCinemaStatus" class="status-box">هنوز سینمای جدیدی ثبت نشده است.</pre>
+          <div id="managerCinemasList" class="list"></div>
+        </section>
+
+        <section class="card" id="managerHallsSection">
+          <div class="section-head">
+            <h2>افزودن سالن و ظرفیت</h2>
+            <button id="saveHallButton">ساخت سالن</button>
+          </div>
+          <div class="form-grid">
+            <label>انتخاب سینما
+              <select id="hallCinemaSelect"></select>
+            </label>
+            <label>نام سالن <input id="hallNameInput" type="text" /></label>
+            <label>تعداد ردیف <input id="hallRowsInput" type="number" min="1" value="6" /></label>
+            <label>تعداد صندلی در هر ردیف <input id="hallSeatsPerRowInput" type="number" min="1" value="10" /></label>
+            <label>ظرفیت محاسبه‌شده <input id="hallCapacityInput" type="number" readonly /></label>
+          </div>
+          <pre id="managerHallStatus" class="status-box">هنوز سالنی ساخته نشده است.</pre>
+          <div id="managerHallsList" class="list"></div>
+        </section>
+      </section>
+
+      <section class="layout manager-layout" data-role-scope="CINEMA_MANAGER,ADMIN" id="managerSection">
+        <section class="card" id="managerShowtimesSection">
+          <div class="section-head">
+            <h2>ساخت سانس</h2>
+            <button id="saveShowtimeButton">ذخیره سانس</button>
+          </div>
+          <div class="form-grid">
+            <label>انتخاب فیلم
+              <select id="showtimeMovieSelect"></select>
+            </label>
+            <label>انتخاب سینما
+              <select id="showtimeCinemaSelect"></select>
+            </label>
+            <label>انتخاب سالن
+              <select id="showtimeHallSelect"></select>
+            </label>
+            <label>تاریخ و ساعت شروع <input id="showtimeStartInput" type="datetime-local" /></label>
+            <label>تاریخ و ساعت پایان <input id="showtimeEndInput" type="datetime-local" /></label>
+            <label>قیمت بلیت <input id="showtimePriceInput" type="number" min="1" value="250" /></label>
+            <label>وضعیت
+              <select id="showtimeStatusInput">
+                <option value="PUBLISHED">منتشرشده</option>
+                <option value="DRAFT">پیش‌نویس</option>
+              </select>
+            </label>
+          </div>
+          <pre id="managerShowtimeStatus" class="status-box">هنوز سانسی ساخته نشده است.</pre>
+        </section>
+
+        <section class="card" id="managerShowtimesListSection">
+          <div class="section-head">
+            <h2>فهرست سانس‌ها</h2>
+            <button id="refreshManagerShowtimesButton" class="secondary">بارگذاری دوباره</button>
+          </div>
+          <div id="managerShowtimesList" class="list"></div>
+        </section>
+      </section>
+
+      <section class="layout manager-layout" data-role-scope="CINEMA_MANAGER,ADMIN">
+        <section class="card" id="managerSalesSection">
+          <div class="section-head">
+            <h2>گزارش فروش مدیر سینما</h2>
+            <button id="loadSalesReportButton" class="secondary">بارگذاری گزارش</button>
+          </div>
+          <div id="managerSalesCards" class="cards-grid"></div>
           <div id="salesReportList" class="list"></div>
         </section>
       </section>

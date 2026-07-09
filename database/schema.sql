@@ -15,6 +15,7 @@ CREATE TABLE cinemas (
     name VARCHAR(160) NOT NULL,
     city VARCHAR(100) NOT NULL,
     address_line TEXT NOT NULL,
+    phone VARCHAR(32),
     manager_user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
     cinema_status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (cinema_status IN ('active', 'inactive')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -25,6 +26,8 @@ CREATE TABLE halls (
     id BIGSERIAL PRIMARY KEY,
     cinema_id BIGINT NOT NULL REFERENCES cinemas(id) ON DELETE CASCADE,
     name VARCHAR(120) NOT NULL,
+    rows_count INTEGER NOT NULL DEFAULT 1 CHECK (rows_count > 0),
+    seats_per_row INTEGER NOT NULL DEFAULT 1 CHECK (seats_per_row > 0),
     capacity INTEGER NOT NULL CHECK (capacity > 0),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -47,6 +50,8 @@ CREATE TABLE seats (
     section_id BIGINT NOT NULL REFERENCES sections(id) ON DELETE CASCADE,
     row_label VARCHAR(20) NOT NULL,
     seat_number VARCHAR(20) NOT NULL,
+    x_coordinate INTEGER,
+    y_coordinate INTEGER,
     seat_type VARCHAR(30) NOT NULL DEFAULT 'regular',
     seat_status VARCHAR(20) NOT NULL DEFAULT 'available' CHECK (seat_status IN ('available', 'inactive')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -64,6 +69,7 @@ CREATE TABLE movies (
     language VARCHAR(50) NOT NULL DEFAULT 'فارسی',
     age_rating VARCHAR(20) NOT NULL DEFAULT '12+',
     movie_status VARCHAR(20) NOT NULL DEFAULT 'published' CHECK (movie_status IN ('draft', 'published', 'archived')),
+    created_by BIGINT REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -71,11 +77,12 @@ CREATE TABLE movies (
 CREATE TABLE showtimes (
     id BIGSERIAL PRIMARY KEY,
     movie_id BIGINT NOT NULL REFERENCES movies(id) ON DELETE CASCADE,
+    cinema_id BIGINT NOT NULL REFERENCES cinemas(id) ON DELETE CASCADE,
     hall_id BIGINT NOT NULL REFERENCES halls(id) ON DELETE CASCADE,
     starts_at TIMESTAMPTZ NOT NULL,
     ends_at TIMESTAMPTZ NOT NULL,
     base_price NUMERIC(12, 2) NOT NULL CHECK (base_price >= 0),
-    showtime_status VARCHAR(20) NOT NULL DEFAULT 'scheduled' CHECK (showtime_status IN ('scheduled', 'cancelled', 'completed')),
+    showtime_status VARCHAR(20) NOT NULL DEFAULT 'draft' CHECK (showtime_status IN ('draft', 'published', 'cancelled', 'completed')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CHECK (ends_at > starts_at)
@@ -158,9 +165,12 @@ CREATE TABLE admin_action_logs (
 );
 
 CREATE INDEX idx_movies_discovery ON movies (movie_status, genre, title);
+CREATE INDEX idx_movies_created_by ON movies (created_by, updated_at DESC);
 CREATE INDEX idx_cinemas_city_lookup ON cinemas (city, cinema_status);
+CREATE INDEX idx_cinemas_manager_lookup ON cinemas (manager_user_id, created_at DESC);
 CREATE INDEX idx_showtimes_movie_lookup ON showtimes (movie_id, starts_at);
 CREATE INDEX idx_showtimes_hall_lookup ON showtimes (hall_id, starts_at);
+CREATE INDEX idx_showtimes_cinema_lookup ON showtimes (cinema_id, starts_at);
 CREATE INDEX idx_reservations_user_lookup ON reservations (user_id, created_at DESC);
 CREATE INDEX idx_reservations_showtime_lookup ON reservations (showtime_id, reservation_status);
 CREATE INDEX idx_reservation_seats_showtime_seat_lookup ON reservation_seats (showtime_id, seat_id);

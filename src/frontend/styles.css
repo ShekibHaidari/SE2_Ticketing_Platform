@@ -14,10 +14,7 @@
 }
 
 * { box-sizing: border-box; }
-
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
@@ -29,9 +26,7 @@ body {
     linear-gradient(180deg, #f8f3ea 0%, #efe4d5 100%);
 }
 
-.hero {
-  padding: 1.2rem 1rem 2rem;
-}
+.hero { padding: 1.2rem 1rem 2rem; }
 
 .nav,
 .hero__content,
@@ -69,27 +64,12 @@ body {
   flex-wrap: wrap;
 }
 
-.nav__links button,
-.auth-panel button,
-.demo-buttons button,
-.placeholder-actions button {
-  white-space: nowrap;
-}
-
 .nav__label {
   color: var(--muted);
   font-size: 0.92rem;
 }
 
-.nav__links a,
-.links a {
-  color: var(--accent);
-  text-decoration: none;
-}
-
-.hero__content {
-  padding-top: 1.8rem;
-}
+.hero__content { padding-top: 1.8rem; }
 
 .eyebrow {
   color: var(--gold);
@@ -99,12 +79,9 @@ body {
   margin: 0 0 0.4rem;
 }
 
-h1, h2, h3, p {
-  margin-top: 0;
-}
-
+h1, h2, h3, p { margin-top: 0; }
 h1 {
-  font-size: clamp(2rem, 5vw, 3.3rem);
+  font-size: clamp(2rem, 5vw, 3.2rem);
   margin-bottom: 0.7rem;
 }
 
@@ -118,6 +95,10 @@ h1 {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.manager-layout {
+  align-items: start;
 }
 
 .card {
@@ -144,7 +125,8 @@ h1 {
   flex-wrap: wrap;
 }
 
-.login-grid {
+.login-grid,
+.form-grid {
   display: grid;
   gap: 0.75rem;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -158,17 +140,23 @@ label {
 
 input,
 select,
-button {
+button,
+textarea {
   font: inherit;
   border-radius: 12px;
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   border: 1px solid var(--border);
   background: white;
   padding: 0.85rem 0.9rem;
+}
+
+textarea {
+  resize: vertical;
 }
 
 button {
@@ -223,14 +211,30 @@ button.danger {
 .feature-card,
 .movie-card,
 .item,
-.section-block {
+.section-block,
+.metric-card {
   background: var(--panel-strong);
   border: 1px solid var(--border);
   border-radius: 18px;
   padding: 1rem;
 }
 
-.movie-poster {
+.movie-card__poster,
+.manager-movie-poster,
+.ticket-image {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+}
+
+.movie-card__poster,
+.manager-movie-poster {
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  margin-bottom: 0.8rem;
+}
+
+.movie-poster-placeholder {
   width: 100%;
   aspect-ratio: 3 / 4;
   border-radius: 14px;
@@ -239,6 +243,8 @@ button.danger {
   place-items: center;
   color: #173742;
   margin-bottom: 0.8rem;
+  padding: 1rem;
+  text-align: center;
 }
 
 .list {
@@ -315,16 +321,31 @@ button.danger {
   border-color: var(--accent);
 }
 
-.ticket-image {
-  width: min(180px, 100%);
-  margin-top: 0.8rem;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-}
-
 .badge.success {
   background: rgba(20, 122, 84, 0.12);
   color: var(--success);
+}
+
+.badge.warning {
+  background: rgba(208, 140, 24, 0.16);
+  color: #9a6700;
+}
+
+.metric-card h3 {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+
+.metric-card strong {
+  font-size: 1.4rem;
+}
+
+.row-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.8rem;
 }
 
 [hidden] {
@@ -333,7 +354,8 @@ button.danger {
 
 @media (max-width: 900px) {
   .layout,
-  .login-grid {
+  .login-grid,
+  .form-grid {
     grid-template-columns: 1fr;
   }
 

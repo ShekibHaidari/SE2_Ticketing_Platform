@@ -6,8 +6,10 @@ const MESSAGES = {
   loginError: "ایمیل یا رمز عبور اشتباه است.",
   logout: "از حساب کاربری خارج شدید.",
   unauthorized: "برای مشاهده این بخش ابتدا وارد شوید.",
-  wrongRole: "شما به این بخش دسترسی ندارید.",
+  wrongRole: "شما اجازه دسترسی به این بخش را ندارید.",
   loading: "در حال بارگذاری...",
+  emptyMovies: "هنوز فیلمی ثبت نشده است.",
+  emptyShowtimes: "هنوز سانسی ساخته نشده است.",
 };
 
 const ROLE_LABELS = {
@@ -32,21 +34,19 @@ const ROLE_NAV = {
   ],
   CINEMA_MANAGER: [
     { label: "داشبورد مدیر سینما", target: "managerOverview" },
-    { label: "مدیریت فیلم‌ها", target: "managerSection" },
-    { label: "مدیریت سانس‌ها", target: "managerSection" },
-    { label: "مدیریت سالن‌ها", target: "managerSection" },
-    { label: "گزارش فروش", target: "managerSection" },
+    { label: "افزودن فیلم", target: "managerMoviesSection" },
+    { label: "افزودن سالن", target: "managerHallsSection" },
+    { label: "ساخت سانس", target: "managerShowtimesSection" },
+    { label: "گزارش فروش", target: "managerSalesSection" },
   ],
   STAFF: [
     { label: "کنترل بلیت", target: "staffOverview" },
     { label: "جستجوی بلیت", target: "staffSection" },
   ],
   ADMIN: [
-    { label: "داشبورد مدیر سیستم", target: "adminOverview" },
-    { label: "مدیریت کاربران", target: "adminSection" },
-    { label: "مدیریت سینماها", target: "adminSection" },
+    { label: "پنل مدیر سینما", target: "managerOverview" },
+    { label: "مدیریت محتوا", target: "managerSection" },
     { label: "وضعیت سیستم", target: "adminSection" },
-    { label: "گزارش کلی فروش", target: "adminSection" },
   ],
 };
 
@@ -60,10 +60,14 @@ const state = {
   currentReservation: null,
   currentPayment: null,
   countdownTimerId: null,
+  managerMovies: [],
+  managerCinemas: [],
+  managerHallsByCinema: {},
+  managerShowtimes: [],
+  managerSalesReport: null,
 };
 
 const $ = (id) => document.getElementById(id);
-
 const authActions = $("authActions");
 const roleNav = $("roleNav");
 const authStatus = $("authStatus");
@@ -76,6 +80,16 @@ const paymentDetails = $("paymentDetails");
 const ticketsList = $("ticketsList");
 const notificationsList = $("notificationsList");
 const managerDashboard = $("managerDashboard");
+const managerStatsCards = $("managerStatsCards");
+const managerMoviesList = $("managerMoviesList");
+const managerMovieStatus = $("managerMovieStatus");
+const managerCinemasList = $("managerCinemasList");
+const managerCinemaStatus = $("managerCinemaStatus");
+const managerHallsList = $("managerHallsList");
+const managerHallStatus = $("managerHallStatus");
+const managerShowtimeStatus = $("managerShowtimeStatus");
+const managerShowtimesList = $("managerShowtimesList");
+const managerSalesCards = $("managerSalesCards");
 const salesReportList = $("salesReportList");
 const staffValidationResult = $("staffValidationResult");
 const adminSummary = $("adminSummary");
@@ -89,10 +103,7 @@ function pretty(value) {
 function normalizeRole(role) {
   const value = String(role || "").toUpperCase();
   if (value === "MANAGER") return "CINEMA_MANAGER";
-  if (value === "CUSTOMER" || value === "CINEMA_MANAGER" || value === "STAFF" || value === "ADMIN") {
-    return value;
-  }
-
+  if (["CUSTOMER", "CINEMA_MANAGER", "STAFF", "ADMIN"].includes(value)) return value;
   const lower = String(role || "").toLowerCase();
   if (lower === "manager") return "CINEMA_MANAGER";
   if (lower === "staff") return "STAFF";
@@ -108,7 +119,6 @@ function ensureWrappedPayload(payload) {
   if (payload && typeof payload === "object" && "ok" in payload && "data" in payload) {
     return payload.data;
   }
-
   return payload;
 }
 
@@ -117,10 +127,7 @@ async function api(path, options = {}) {
     "Content-Type": "application/json",
     ...(options.headers || {}),
   };
-
-  if (state.token) {
-    headers.Authorization = `Bearer ${state.token}`;
-  }
+  if (state.token) headers.Authorization = `Bearer ${state.token}`;
 
   const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
   const text = await response.text();
@@ -130,12 +137,28 @@ async function api(path, options = {}) {
   if (!response.ok) {
     throw new Error(parsed?.error || data?.error || "خطا در ارتباط با سرور");
   }
-
   return data;
 }
 
 function toPersianDate(dateValue) {
   return new Date(dateValue).toLocaleString("fa-AF");
+}
+
+function toDateTimeLocal(dateValue) {
+  const date = new Date(dateValue);
+  const timezoneOffset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - timezoneOffset).toISOString().slice(0, 16);
+}
+
+function posterMarkup(title, posterUrl, imageClass = "movie-card__poster") {
+  if (posterUrl) {
+    return `<img class="${imageClass}" src="${posterUrl}" alt="${title}" />`;
+  }
+  return `<div class="movie-poster-placeholder">${title}</div>`;
+}
+
+function setAuthStatus(message, details = null) {
+  authStatus.textContent = details ? `${message}\n\n${pretty(details)}` : message;
 }
 
 function scrollToSection(targetId) {
@@ -144,23 +167,67 @@ function scrollToSection(targetId) {
     window.alert(state.user ? MESSAGES.wrongRole : MESSAGES.unauthorized);
     return;
   }
-
   section.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function persistSession() {
-  localStorage.setItem(SESSION_KEY, JSON.stringify({
-    token: state.token,
-    user: state.user,
-  }));
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ token: state.token, user: state.user }));
 }
 
 function clearSession() {
   localStorage.removeItem(SESSION_KEY);
 }
 
-function setAuthStatus(message, details = null) {
-  authStatus.textContent = details ? `${message}\n\n${pretty(details)}` : message;
+function requireLoggedIn() {
+  if (!state.user || !state.token) throw new Error(MESSAGES.unauthorized);
+}
+
+function requireRole(...roles) {
+  requireLoggedIn();
+  if (!roles.includes(state.user.role)) throw new Error(MESSAGES.wrongRole);
+}
+
+function updateVisibleSections() {
+  document.querySelectorAll("[data-role-scope]").forEach((section) => {
+    const allowedRoles = section.getAttribute("data-role-scope").split(",").map((item) => item.trim());
+    section.hidden = !state.user || !allowedRoles.includes(state.user.role);
+  });
+}
+
+function renderAuthUi() {
+  authActions.innerHTML = "";
+  if (!state.user) {
+    const loginButton = document.createElement("button");
+    loginButton.textContent = "ورود";
+    loginButton.addEventListener("click", () => scrollToSection("auth"));
+    const registerButton = document.createElement("button");
+    registerButton.className = "secondary";
+    registerButton.textContent = "ثبت‌نام نمایشی";
+    registerButton.addEventListener("click", () => scrollToSection("auth"));
+    authActions.append(loginButton, registerButton);
+    return;
+  }
+
+  const userLabel = document.createElement("span");
+  userLabel.className = "nav__label";
+  userLabel.textContent = `${state.user.fullName} | ${state.user.roleLabel}`;
+  const logoutButton = document.createElement("button");
+  logoutButton.className = "secondary";
+  logoutButton.textContent = "خروج";
+  logoutButton.addEventListener("click", logout);
+  authActions.append(userLabel, logoutButton);
+}
+
+function renderRoleNav() {
+  roleNav.innerHTML = "";
+  if (!state.user) return;
+  ROLE_NAV[state.user.role].forEach((item) => {
+    const button = document.createElement("button");
+    button.className = "ghost";
+    button.textContent = item.label;
+    button.addEventListener("click", () => scrollToSection(item.target));
+    roleNav.appendChild(button);
+  });
 }
 
 function setUserSession(token, user) {
@@ -182,6 +249,11 @@ function resetTransientState() {
   state.selectedSeat = null;
   state.currentReservation = null;
   state.currentPayment = null;
+  state.managerMovies = [];
+  state.managerCinemas = [];
+  state.managerHallsByCinema = {};
+  state.managerShowtimes = [];
+  state.managerSalesReport = null;
   movieDetails.textContent = "ابتدا یک فیلم را انتخاب کنید.";
   showtimesList.innerHTML = "";
   seatMap.innerHTML = "";
@@ -190,7 +262,17 @@ function resetTransientState() {
   paymentDetails.textContent = "هنوز پرداختی ایجاد نشده است.";
   ticketsList.innerHTML = "";
   notificationsList.innerHTML = "";
-  managerDashboard.textContent = "داشبورد مدیر هنوز بارگذاری نشده است.";
+  managerDashboard.textContent = "آمار پنل مدیر هنوز بارگذاری نشده است.";
+  managerStatsCards.innerHTML = "";
+  managerMoviesList.innerHTML = "";
+  managerMovieStatus.textContent = "هنوز فیلمی ثبت یا ویرایش نشده است.";
+  managerCinemasList.innerHTML = "";
+  managerCinemaStatus.textContent = "هنوز سینمای جدیدی ثبت نشده است.";
+  managerHallsList.innerHTML = "";
+  managerHallStatus.textContent = "هنوز سالنی ساخته نشده است.";
+  managerShowtimeStatus.textContent = "هنوز سانسی ساخته نشده است.";
+  managerShowtimesList.innerHTML = "";
+  managerSalesCards.innerHTML = "";
   salesReportList.innerHTML = "";
   staffValidationResult.textContent = "نتیجه اعتبارسنجی اینجا نمایش داده می‌شود.";
   adminSummary.textContent = "اطلاعات مدیریتی هنوز بارگذاری نشده است.";
@@ -213,85 +295,28 @@ function logout() {
   setAuthStatus(MESSAGES.logout);
 }
 
-function renderAuthUi() {
-  authActions.innerHTML = "";
-
-  if (!state.user) {
-    const loginButton = document.createElement("button");
-    loginButton.textContent = "ورود";
-    loginButton.addEventListener("click", () => scrollToSection("auth"));
-
-    const registerButton = document.createElement("button");
-    registerButton.className = "secondary";
-    registerButton.textContent = "ثبت‌نام نمایشی";
-    registerButton.addEventListener("click", () => scrollToSection("auth"));
-
-    authActions.append(loginButton, registerButton);
-    return;
-  }
-
-  const userLabel = document.createElement("span");
-  userLabel.className = "nav__label";
-  userLabel.textContent = `${state.user.fullName} | ${state.user.roleLabel}`;
-
-  const logoutButton = document.createElement("button");
-  logoutButton.className = "secondary";
-  logoutButton.textContent = "خروج";
-  logoutButton.addEventListener("click", logout);
-
-  authActions.append(userLabel, logoutButton);
-}
-
-function renderRoleNav() {
-  roleNav.innerHTML = "";
-
-  if (!state.user) {
-    return;
-  }
-
-  ROLE_NAV[state.user.role].forEach((item) => {
-    const button = document.createElement("button");
-    button.className = "ghost";
-    button.textContent = item.label;
-    button.addEventListener("click", () => scrollToSection(item.target));
-    roleNav.appendChild(button);
+function renderMetricCards(container, items) {
+  container.innerHTML = "";
+  items.forEach((item) => {
+    const card = document.createElement("article");
+    card.className = "metric-card";
+    card.innerHTML = `<h3>${item.label}</h3><strong>${item.value}</strong>`;
+    container.appendChild(card);
   });
-}
-
-function updateVisibleSections() {
-  document.querySelectorAll("[data-role-scope]").forEach((section) => {
-    const allowedRole = section.getAttribute("data-role-scope");
-    section.hidden = !state.user || state.user.role !== allowedRole;
-  });
-}
-
-function requireLoggedIn() {
-  if (!state.user || !state.token) {
-    throw new Error(MESSAGES.unauthorized);
-  }
-}
-
-function requireRole(...roles) {
-  requireLoggedIn();
-  if (!roles.includes(state.user.role)) {
-    throw new Error(MESSAGES.wrongRole);
-  }
 }
 
 function renderMovies(movies) {
   const container = $("moviesList");
   container.innerHTML = "";
-
   movies.forEach((movie) => {
     const card = document.createElement("div");
     card.className = "movie-card";
     card.innerHTML = `
-      <div class="movie-poster">${movie.title}</div>
+      ${posterMarkup(movie.title, movie.posterUrl)}
       <h3>${movie.title}</h3>
       <p>${movie.genre} • ${movie.durationMinutes} دقیقه</p>
       <p>${movie.description || ""}</p>
     `;
-
     const button = document.createElement("button");
     button.textContent = "مشاهده سانس‌ها";
     button.addEventListener("click", () => selectMovie(movie.id));
@@ -302,7 +327,6 @@ function renderMovies(movies) {
 
 function renderShowtimes(showtimes) {
   showtimesList.innerHTML = "";
-
   showtimes.forEach((showtime) => {
     const item = document.createElement("div");
     item.className = "item";
@@ -324,7 +348,6 @@ function renderSeatMap(data) {
   seatMap.innerHTML = "";
   state.selectedSeat = null;
   selectedSeatSummary.textContent = "هنوز صندلی انتخاب نشده است.";
-
   data.sections.forEach((section) => {
     const block = document.createElement("div");
     block.className = "section-block";
@@ -334,7 +357,6 @@ function renderSeatMap(data) {
 
     const grid = document.createElement("div");
     grid.className = "seat-grid";
-
     section.seats.forEach((seat) => {
       const button = document.createElement("button");
       button.className = `seat ${seat.state}`;
@@ -355,10 +377,7 @@ function renderSeatMap(data) {
 }
 
 function startCountdown(lockedUntil) {
-  if (state.countdownTimerId) {
-    clearInterval(state.countdownTimerId);
-  }
-
+  if (state.countdownTimerId) clearInterval(state.countdownTimerId);
   const update = () => {
     const diff = new Date(lockedUntil).getTime() - Date.now();
     if (diff <= 0) {
@@ -367,13 +386,11 @@ function startCountdown(lockedUntil) {
       state.countdownTimerId = null;
       return;
     }
-
     const totalSeconds = Math.floor(diff / 1000);
     const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
     const seconds = String(totalSeconds % 60).padStart(2, "0");
     countdownTimer.textContent = `زمان باقی‌مانده رزرو: ${minutes}:${seconds}`;
   };
-
   update();
   state.countdownTimerId = setInterval(update, 1000);
 }
@@ -381,7 +398,6 @@ function startCountdown(lockedUntil) {
 async function login(credentials = null) {
   const email = credentials?.email || $("emailInput").value.trim();
   const password = credentials?.password || $("passwordInput").value;
-
   try {
     setAuthStatus(MESSAGES.loading);
     const data = await api("/api/auth/login", {
@@ -390,6 +406,7 @@ async function login(credentials = null) {
     });
     setUserSession(data.token || data.accessToken, data.user);
     setAuthStatus(MESSAGES.loginSuccess, state.user);
+    await bootstrapRoleData();
   } catch (_error) {
     state.token = "";
     state.user = null;
@@ -410,7 +427,6 @@ async function registerDemo() {
     password: "password123",
     phoneNumber: `0700${String(idSuffix).slice(-6)}`,
   };
-
   setAuthStatus(MESSAGES.loading);
   const data = await api("/api/auth/register", {
     method: "POST",
@@ -438,8 +454,20 @@ async function restoreSession() {
     const profile = await api("/api/auth/me");
     setUserSession(state.token, profile);
     setAuthStatus("نشست قبلی بازیابی شد.", state.user);
+    await bootstrapRoleData();
   } catch (_error) {
     logout();
+  }
+}
+
+async function bootstrapRoleData() {
+  if (!state.user) return;
+  if (state.user.role === "CUSTOMER") {
+    await loadMovies();
+    return;
+  }
+  if (["CINEMA_MANAGER", "ADMIN"].includes(state.user.role)) {
+    await loadManagerBootstrap();
   }
 }
 
@@ -452,10 +480,8 @@ async function loadMovies() {
   if (q) params.set("q", q);
   if (city) params.set("city", city);
   if (genre) params.set("genre", genre);
-
-  const movies = await api(`/api/movies${params.toString() ? `?${params.toString()}` : ""}`);
-  state.movies = movies;
-  renderMovies(movies);
+  state.movies = await api(`/api/movies${params.toString() ? `?${params.toString()}` : ""}`);
+  renderMovies(state.movies);
 }
 
 async function selectMovie(movieId) {
@@ -485,7 +511,6 @@ async function lockSeat() {
   if (!state.selectedShowtime || !state.selectedSeat) {
     throw new Error("ابتدا سانس را انتخاب کنید و یک صندلی برگزینید.");
   }
-
   const reservation = await api("/api/reservations/lock-seat", {
     method: "POST",
     body: JSON.stringify({
@@ -494,7 +519,6 @@ async function lockSeat() {
       seatIds: [state.selectedSeat.seatId],
     }),
   });
-
   state.currentReservation = reservation;
   reservationDetails.textContent = pretty(reservation);
   startCountdown(reservation.lockedUntil);
@@ -539,7 +563,6 @@ async function loadTickets() {
   requireRole("CUSTOMER");
   const tickets = await api(`/api/tickets/my/${state.user.id}`);
   ticketsList.innerHTML = "";
-
   tickets.forEach((ticket) => {
     const item = document.createElement("div");
     item.className = "item";
@@ -572,26 +595,347 @@ async function loadNotifications() {
   });
 }
 
-async function loadManagerDashboard() {
-  requireRole("CINEMA_MANAGER");
-  managerDashboard.textContent = pretty(await api("/api/manager/dashboard"));
+function populateSelect(selectId, items, placeholder, mapFn) {
+  const select = $(selectId);
+  select.innerHTML = "";
+  if (!items.length) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = placeholder;
+    select.appendChild(option);
+    return;
+  }
+  items.forEach((item, index) => {
+    const option = document.createElement("option");
+    const mapped = mapFn(item);
+    option.value = mapped.value;
+    option.textContent = mapped.label;
+    if (index === 0) option.selected = true;
+    select.appendChild(option);
+  });
 }
 
-async function loadSalesReport() {
-  requireRole("CINEMA_MANAGER");
-  const reports = await api("/api/manager/sales-report");
-  salesReportList.innerHTML = "";
-  reports.forEach((report) => {
+function resetMovieForm() {
+  $("movieEditIdInput").value = "";
+  $("movieFormTitle").textContent = "افزودن فیلم جدید";
+  $("movieTitleInput").value = "";
+  $("movieDescriptionInput").value = "";
+  $("movieGenreInput").value = "";
+  $("movieDurationInput").value = "";
+  $("movieAgeRatingInput").value = "عمومی";
+  $("movieLanguageInput").value = "دری";
+  $("moviePosterInput").value = "";
+  $("movieStatusInput").value = "PUBLISHED";
+  $("cancelMovieEditButton").hidden = true;
+}
+
+function calculateHallCapacity() {
+  const rows = Number($("hallRowsInput").value || 0);
+  const seatsPerRow = Number($("hallSeatsPerRowInput").value || 0);
+  $("hallCapacityInput").value = String(rows * seatsPerRow);
+}
+
+function renderManagerMovies() {
+  managerMoviesList.innerHTML = "";
+  if (!state.managerMovies.length) {
+    managerMoviesList.innerHTML = `<div class="item">${MESSAGES.emptyMovies}</div>`;
+    return;
+  }
+  state.managerMovies.forEach((movie) => {
     const item = document.createElement("div");
     item.className = "item";
     item.innerHTML = `
-      <strong>${report.movieTitle}</strong>
-      <div>${report.cinemaName}</div>
-      <div>بلیت فروخته‌شده: ${report.soldTickets}</div>
-      <div>درآمد: ${report.revenue} افغانی</div>
+      ${posterMarkup(movie.title, movie.posterUrl, "manager-movie-poster")}
+      <strong>${movie.title}</strong>
+      <div>${movie.genre} • ${movie.durationMinutes} دقیقه</div>
+      <div>وضعیت: ${movie.status === "PUBLISHED" ? "منتشرشده" : "پیش‌نویس"}</div>
+      <div>${movie.description || "توضیحی ثبت نشده است."}</div>
+    `;
+    const actions = document.createElement("div");
+    actions.className = "row-actions";
+    const editButton = document.createElement("button");
+    editButton.className = "secondary";
+    editButton.textContent = "ویرایش";
+    editButton.addEventListener("click", () => startMovieEdit(movie));
+    actions.appendChild(editButton);
+    item.appendChild(actions);
+    managerMoviesList.appendChild(item);
+  });
+}
+
+function renderManagerCinemas() {
+  managerCinemasList.innerHTML = "";
+  if (!state.managerCinemas.length) {
+    managerCinemasList.innerHTML = `<div class="item">هنوز سینمایی ثبت نشده است.</div>`;
+    return;
+  }
+  state.managerCinemas.forEach((cinema) => {
+    const item = document.createElement("div");
+    item.className = "item";
+    item.innerHTML = `
+      <strong>${cinema.name}</strong>
+      <div>${cinema.city}</div>
+      <div>${cinema.address}</div>
+      <div>${cinema.phone || "شماره تماس ثبت نشده است."}</div>
+    `;
+    managerCinemasList.appendChild(item);
+  });
+}
+
+function renderManagerHalls() {
+  managerHallsList.innerHTML = "";
+  const halls = Object.values(state.managerHallsByCinema).flat();
+  if (!halls.length) {
+    managerHallsList.innerHTML = `<div class="item">هنوز سالنی ثبت نشده است.</div>`;
+    return;
+  }
+  halls.forEach((hall) => {
+    const item = document.createElement("div");
+    item.className = "item";
+    item.innerHTML = `
+      <strong>${hall.name}</strong>
+      <div>${hall.cinemaName}</div>
+      <div>چیدمان: ${hall.rows} ردیف × ${hall.seatsPerRow} صندلی</div>
+      <div>ظرفیت: ${hall.capacity}</div>
+    `;
+    managerHallsList.appendChild(item);
+  });
+}
+
+function renderManagerShowtimes() {
+  managerShowtimesList.innerHTML = "";
+  if (!state.managerShowtimes.length) {
+    managerShowtimesList.innerHTML = `<div class="item">${MESSAGES.emptyShowtimes}</div>`;
+    return;
+  }
+  state.managerShowtimes.forEach((showtime) => {
+    const item = document.createElement("div");
+    item.className = "item";
+    item.innerHTML = `
+      <strong>${showtime.movieTitle}</strong>
+      <div>${showtime.cinemaName} - ${showtime.hallName}</div>
+      <div>زمان: ${toPersianDate(showtime.startTime)}</div>
+      <div>قیمت: ${showtime.ticketPrice} افغانی</div>
+      <div>فروخته‌شده: ${showtime.soldSeats} | باقی‌مانده: ${showtime.remainingSeats}</div>
+      <span class="badge ${showtime.status === "PUBLISHED" ? "success" : "warning"}">
+        ${showtime.status === "PUBLISHED" ? "منتشرشده" : "پیش‌نویس"}
+      </span>
+    `;
+    managerShowtimesList.appendChild(item);
+  });
+}
+
+function renderManagerSales(report) {
+  renderMetricCards(managerSalesCards, [
+    { label: "فروش کل", value: `${report.totalRevenue} افغانی` },
+    { label: "فروش امروز", value: `${report.todayRevenue} افغانی` },
+    { label: "تعداد بلیت فروخته‌شده", value: report.ticketsSold },
+    { label: "سانس‌های فعال", value: report.activeShowtimes },
+    { label: "ظرفیت باقی‌مانده", value: report.remainingSeats },
+  ]);
+
+  salesReportList.innerHTML = "";
+  report.revenueByShowtime.forEach((entry) => {
+    const item = document.createElement("div");
+    item.className = "item";
+    item.innerHTML = `
+      <strong>${entry.movieTitle}</strong>
+      <div>${entry.cinemaName} - ${entry.hallName}</div>
+      <div>زمان: ${toPersianDate(entry.startTime)}</div>
+      <div>درآمد: ${entry.revenue} افغانی</div>
+      <div>فروخته‌شده: ${entry.soldSeats} | باقی‌مانده: ${entry.remainingSeats}</div>
     `;
     salesReportList.appendChild(item);
   });
+}
+
+function renderManagerDashboard(data) {
+  renderMetricCards(managerStatsCards, [
+    { label: "تعداد فیلم‌ها", value: data.totalMovies },
+    { label: "تعداد سانس‌ها", value: data.totalShowtimes },
+    { label: "تعداد سالن‌ها", value: data.totalHalls },
+    { label: "فروش کل", value: `${data.totalRevenue} افغانی` },
+    { label: "فروش امروز", value: `${data.todayRevenue} افغانی` },
+    { label: "ظرفیت باقی‌مانده", value: data.remainingSeatsSummary.remainingSeats },
+  ]);
+  managerDashboard.textContent = pretty(data);
+}
+
+function startMovieEdit(movie) {
+  $("movieEditIdInput").value = String(movie.id);
+  $("movieFormTitle").textContent = "ویرایش فیلم";
+  $("movieTitleInput").value = movie.title;
+  $("movieDescriptionInput").value = movie.description || "";
+  $("movieGenreInput").value = movie.genre;
+  $("movieDurationInput").value = String(movie.durationMinutes);
+  $("movieAgeRatingInput").value = movie.ageRating || "عمومی";
+  $("movieLanguageInput").value = movie.language || "دری";
+  $("moviePosterInput").value = movie.posterUrl || "";
+  $("movieStatusInput").value = movie.status || "PUBLISHED";
+  $("cancelMovieEditButton").hidden = false;
+  scrollToSection("managerMoviesSection");
+}
+
+async function loadManagerDashboard() {
+  requireRole("CINEMA_MANAGER", "ADMIN");
+  renderManagerDashboard(await api("/api/manager/dashboard"));
+}
+
+async function loadManagerMovies() {
+  requireRole("CINEMA_MANAGER", "ADMIN");
+  state.managerMovies = await api("/api/manager/movies");
+  renderManagerMovies();
+  populateSelect("showtimeMovieSelect", state.managerMovies, "ابتدا فیلم ثبت کنید", (movie) => ({
+    value: String(movie.id),
+    label: movie.title,
+  }));
+}
+
+async function loadManagerCinemas() {
+  requireRole("CINEMA_MANAGER", "ADMIN");
+  state.managerCinemas = await api("/api/manager/cinemas");
+  renderManagerCinemas();
+  populateSelect("hallCinemaSelect", state.managerCinemas, "ابتدا سینما ثبت کنید", (cinema) => ({
+    value: String(cinema.id),
+    label: `${cinema.name} - ${cinema.city}`,
+  }));
+  populateSelect("showtimeCinemaSelect", state.managerCinemas, "ابتدا سینما ثبت کنید", (cinema) => ({
+    value: String(cinema.id),
+    label: `${cinema.name} - ${cinema.city}`,
+  }));
+}
+
+async function loadHallsForCinema(cinemaId) {
+  if (!cinemaId) return [];
+  const halls = await api(`/api/manager/cinemas/${cinemaId}/halls`);
+  state.managerHallsByCinema[String(cinemaId)] = halls;
+  renderManagerHalls();
+  return halls;
+}
+
+async function syncShowtimeHallOptions() {
+  const cinemaId = $("showtimeCinemaSelect").value;
+  const halls = state.managerHallsByCinema[cinemaId] || await loadHallsForCinema(cinemaId);
+  populateSelect("showtimeHallSelect", halls, "ابتدا سالن بسازید", (hall) => ({
+    value: String(hall.id),
+    label: `${hall.name} - ظرفیت ${hall.capacity}`,
+  }));
+}
+
+async function loadManagerShowtimes() {
+  requireRole("CINEMA_MANAGER", "ADMIN");
+  state.managerShowtimes = await api("/api/manager/showtimes");
+  renderManagerShowtimes();
+}
+
+async function loadSalesReport() {
+  requireRole("CINEMA_MANAGER", "ADMIN");
+  state.managerSalesReport = await api("/api/manager/sales-report");
+  renderManagerSales(state.managerSalesReport);
+}
+
+async function loadManagerBootstrap() {
+  requireRole("CINEMA_MANAGER", "ADMIN");
+  await Promise.all([
+    loadManagerDashboard(),
+    loadManagerMovies(),
+    loadManagerCinemas(),
+    loadManagerShowtimes(),
+    loadSalesReport(),
+  ]);
+  calculateHallCapacity();
+  await syncShowtimeHallOptions();
+}
+
+async function saveMovie() {
+  requireRole("CINEMA_MANAGER", "ADMIN");
+  const payload = {
+    title: $("movieTitleInput").value.trim(),
+    description: $("movieDescriptionInput").value.trim(),
+    genre: $("movieGenreInput").value.trim(),
+    durationMinutes: Number($("movieDurationInput").value),
+    ageRating: $("movieAgeRatingInput").value.trim(),
+    language: $("movieLanguageInput").value.trim(),
+    posterUrl: $("moviePosterInput").value.trim(),
+    status: $("movieStatusInput").value,
+  };
+
+  const movieId = $("movieEditIdInput").value;
+  const path = movieId ? `/api/manager/movies/${movieId}` : "/api/manager/movies";
+  const method = movieId ? "PUT" : "POST";
+  const result = await api(path, { method, body: JSON.stringify(payload) });
+  managerMovieStatus.textContent = result.message || "فیلم با موفقیت ثبت شد.";
+  resetMovieForm();
+  await loadManagerMovies();
+  await loadMoviesForCustomerIfVisible();
+}
+
+async function saveCinema() {
+  requireRole("CINEMA_MANAGER", "ADMIN");
+  const result = await api("/api/manager/cinemas", {
+    method: "POST",
+    body: JSON.stringify({
+      name: $("cinemaNameInput").value.trim(),
+      city: $("cinemaCityInput").value.trim(),
+      address: $("cinemaAddressInput").value.trim(),
+      phone: $("cinemaPhoneInput").value.trim(),
+    }),
+  });
+  managerCinemaStatus.textContent = result.message || "سینما با موفقیت ثبت شد.";
+  $("cinemaNameInput").value = "";
+  $("cinemaCityInput").value = "";
+  $("cinemaAddressInput").value = "";
+  $("cinemaPhoneInput").value = "";
+  await loadManagerCinemas();
+  await syncShowtimeHallOptions();
+}
+
+async function saveHall() {
+  requireRole("CINEMA_MANAGER", "ADMIN");
+  const result = await api("/api/manager/halls", {
+    method: "POST",
+    body: JSON.stringify({
+      cinemaId: Number($("hallCinemaSelect").value),
+      name: $("hallNameInput").value.trim(),
+      rows: Number($("hallRowsInput").value),
+      seatsPerRow: Number($("hallSeatsPerRowInput").value),
+      capacity: Number($("hallCapacityInput").value),
+    }),
+  });
+  managerHallStatus.textContent = result.message || "سالن و صندلی‌ها با موفقیت ساخته شدند.";
+  $("hallNameInput").value = "";
+  await loadHallsForCinema($("hallCinemaSelect").value);
+  await syncShowtimeHallOptions();
+  await loadManagerDashboard();
+}
+
+async function saveShowtime() {
+  requireRole("CINEMA_MANAGER", "ADMIN");
+  const result = await api("/api/manager/showtimes", {
+    method: "POST",
+    body: JSON.stringify({
+      movieId: Number($("showtimeMovieSelect").value),
+      cinemaId: Number($("showtimeCinemaSelect").value),
+      hallId: Number($("showtimeHallSelect").value),
+      startTime: $("showtimeStartInput").value,
+      endTime: $("showtimeEndInput").value,
+      ticketPrice: Number($("showtimePriceInput").value),
+      status: $("showtimeStatusInput").value,
+    }),
+  });
+  managerShowtimeStatus.textContent = result.message || "سانس با موفقیت ساخته شد.";
+  $("showtimeStartInput").value = "";
+  $("showtimeEndInput").value = "";
+  await loadManagerShowtimes();
+  await loadManagerDashboard();
+  await loadSalesReport();
+  await loadMoviesForCustomerIfVisible();
+}
+
+async function loadMoviesForCustomerIfVisible() {
+  if (state.user?.role === "CUSTOMER") {
+    await loadMovies();
+  }
 }
 
 async function validateTicket() {
@@ -615,7 +959,9 @@ async function resetDemo() {
 }
 
 function bind(id, handler) {
-  $(id).addEventListener("click", async () => {
+  const node = $(id);
+  if (!node) return;
+  node.addEventListener("click", async () => {
     try {
       await handler();
     } catch (error) {
@@ -641,6 +987,13 @@ bind("paymentSuccessButton", async () => completePayment(true));
 bind("paymentFailButton", async () => completePayment(false));
 bind("loadTicketsButton", loadTickets);
 bind("loadNotificationsButton", loadNotifications);
+bind("saveMovieButton", saveMovie);
+bind("cancelMovieEditButton", async () => resetMovieForm());
+bind("refreshManagerMoviesButton", loadManagerMovies);
+bind("saveCinemaButton", saveCinema);
+bind("saveHallButton", saveHall);
+bind("saveShowtimeButton", saveShowtime);
+bind("refreshManagerShowtimesButton", loadManagerShowtimes);
 bind("loadManagerDashboardButton", loadManagerDashboard);
 bind("loadSalesReportButton", loadSalesReport);
 bind("validateTicketButton", validateTicket);
@@ -656,7 +1009,7 @@ document.querySelectorAll("[data-demo-role]").forEach((button) => {
     try {
       await login(demoUser);
     } catch (_error) {
-      // The login flow already shows the Persian error message.
+      // login handles the message
     }
   });
 });
@@ -665,7 +1018,29 @@ document.querySelectorAll("[data-nav-target]").forEach((button) => {
   button.addEventListener("click", () => scrollToSection(button.getAttribute("data-nav-target")));
 });
 
+["hallRowsInput", "hallSeatsPerRowInput"].forEach((id) => {
+  $(id).addEventListener("input", calculateHallCapacity);
+});
+
+$("hallCinemaSelect").addEventListener("change", async () => {
+  try {
+    await loadHallsForCinema($("hallCinemaSelect").value);
+  } catch (error) {
+    window.alert(error.message);
+  }
+});
+
+$("showtimeCinemaSelect").addEventListener("change", async () => {
+  try {
+    await syncShowtimeHallOptions();
+  } catch (error) {
+    window.alert(error.message);
+  }
+});
+
 renderAuthUi();
 renderRoleNav();
 updateVisibleSections();
+calculateHallCapacity();
+resetMovieForm();
 restoreSession();

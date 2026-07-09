@@ -15,6 +15,7 @@ type MovieRow = {
   poster_url: string | null;
   language: string;
   age_rating: string;
+  movie_status: string;
 };
 
 type ShowtimeRow = {
@@ -90,7 +91,8 @@ router.get("/", asyncHandler(async (req, res) => {
         m.description,
         m.poster_url,
         m.language,
-        m.age_rating
+        m.age_rating,
+        m.movie_status
       FROM movies m
       WHERE ${conditions.join(" AND ")}
       ORDER BY m.id ASC
@@ -107,6 +109,7 @@ router.get("/", asyncHandler(async (req, res) => {
     posterUrl: row.poster_url,
     language: row.language,
     ageRating: row.age_rating,
+    status: row.movie_status.toUpperCase(),
   })));
 }));
 
@@ -114,7 +117,7 @@ router.get("/:movieId", asyncHandler(async (req, res) => {
   const movieId = Number(req.params.movieId);
   const result = await query<MovieRow>(
     `
-      SELECT id, title, genre, duration_minutes, description, poster_url, language, age_rating
+      SELECT id, title, genre, duration_minutes, description, poster_url, language, age_rating, movie_status
       FROM movies
       WHERE id = $1
     `,
@@ -135,6 +138,7 @@ router.get("/:movieId", asyncHandler(async (req, res) => {
     posterUrl: row.poster_url,
     language: row.language,
     ageRating: row.age_rating,
+    status: row.movie_status.toUpperCase(),
   });
 }));
 
@@ -162,7 +166,7 @@ router.get("/:movieId/showtimes", asyncHandler(async (req, res) => {
       JOIN movies m ON m.id = st.movie_id
       JOIN halls h ON h.id = st.hall_id
       JOIN cinemas c ON c.id = h.cinema_id
-      WHERE st.movie_id = $1 AND st.showtime_status = 'scheduled'
+      WHERE st.movie_id = $1 AND st.showtime_status = 'published'
       ORDER BY st.starts_at ASC
     `,
     [movieId],

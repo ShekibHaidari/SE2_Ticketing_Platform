@@ -27,7 +27,7 @@ type ShowtimeRow = {
 router.get("/", asyncHandler(async (req, res) => {
   const { city, cinemaId, movieId, date } = req.query;
   const params: unknown[] = [];
-  const conditions = [`st.showtime_status = 'scheduled'`];
+  const conditions = [`st.showtime_status = 'published'`];
 
   if (city) {
     params.push(String(city));
