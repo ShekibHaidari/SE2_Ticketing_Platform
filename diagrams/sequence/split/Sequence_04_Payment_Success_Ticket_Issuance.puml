@@ -1,0 +1,43 @@
+@startuml
+title Sequence Diagram 04 - Payment Success and Ticket Issuance
+
+actor "Customer" as Customer
+participant "Web / Mobile Client" as Client
+participant "API Gateway" as Gateway
+participant "Payment Service" as Payment
+participant "External Payment Gateway" as ExternalGateway
+participant "Reservation Service" as Reservation
+participant "Ticket Service" as Ticket
+database "PostgreSQL" as DB
+queue "Message Broker" as Broker
+
+Customer -> Client: Confirm checkout
+Client -> Gateway: POST /checkout
+Gateway -> Payment: Create payment session
+Payment -> DB: Save payment with INITIATED status
+DB --> Payment: Payment saved
+Payment -> ExternalGateway: Redirect user to payment gateway
+ExternalGateway --> Customer: Show payment page
+
+Customer -> ExternalGateway: Complete payment
+ExternalGateway -> Payment: Send payment callback
+Payment -> ExternalGateway: Verify transaction
+ExternalGateway --> Payment: Payment verified
+
+Payment -> DB: Update payment status to SUCCESS
+DB --> Payment: Payment updated
+
+Payment -> Reservation: Confirm reservation
+Reservation -> DB: Update reservation to CONFIRMED
+DB --> Reservation: Reservation confirmed
+
+Reservation -> Ticket: Request ticket generation
+Ticket -> DB: Create ticket with QR code hash
+DB --> Ticket: Ticket saved
+
+Ticket -> Broker: Publish TicketIssued event
+Payment --> Gateway: Checkout completed
+Gateway --> Client: Return ticket information
+Client --> Customer: Display final ticket
+
+@enduml

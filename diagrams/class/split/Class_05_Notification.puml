@@ -1,0 +1,52 @@
+@startuml
+title Class Diagram 05 - Notification Model
+
+left to right direction
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+class User {
+  +id: UUID
+  +fullName: String
+  +email: String
+  +phoneNumber: String
+}
+
+class Ticket {
+  +id: UUID
+  +ticketCode: String
+  +qrCodeHash: String
+}
+
+class Notification {
+  +id: UUID
+  +type: NotificationType
+  +recipient: String
+  +subject: String
+  +message: String
+  +status: NotificationStatus
+  +sentAt: DateTime
+
+  +send()
+  +retry()
+  +markAsFailed()
+}
+
+enum NotificationType {
+  SMS
+  EMAIL
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+Notification "*" -- "1" User : sent to
+Notification "*" -- "0..1" Ticket : related to
+
+Notification --> NotificationType
+Notification --> NotificationStatus
+
+@enduml

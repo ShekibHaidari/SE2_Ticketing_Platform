@@ -1,30 +1,93 @@
-# SE2 Ticketing Platform
+# Cinema Ticketing Platform
 
-This project is developed for the Software Engineering II course.
+## معرفی پروژه
 
-## Project Topic
-Design and Architecture of an End-to-End Event Ticketing Platform
+این مخزن اکنون یک نسخه قابل اجرای **سامانه فروش بلیت سینما / Cinema Ticketing Platform** را در کنار مستندات معماری، UML، زیرساخت، تست و اسناد درسی نگه می‌دارد. محصول از یک MVP عمومی فروش بلیت به یک تجربه واقعی‌تر برای رزرو بلیت سینما با رابط فارسی و راست‌به‌چپ تبدیل شده است.
 
-## Main Goal
-The goal of this project is to design a scalable, reliable, and highly available online ticketing platform that supports event discovery, real-time seat selection, temporary seat locking, secure payment, ticket issuance with QR code, and asynchronous notifications.
+## نقش‌های اصلی
 
-## Main Technologies
-- Ubuntu
-- VS Code
-- Node.js / TypeScript
-- PostgreSQL
-- Redis
-- RabbitMQ or Kafka
-- Docker
-- Kubernetes
-- Terraform
-- diagrams.net / draw.io
+- `خریدار`: مشاهده فیلم‌ها، انتخاب سانس، قفل صندلی، پرداخت آزمایشی، دریافت بلیت
+- `مدیر سینما`: مشاهده داشبورد، سانس‌ها، فروش و درآمد
+- `کارمند گیشه یا کنترل بلیت`: جستجو و اعتبارسنجی بلیت
+- `مدیر سیستم`: مشاهده آمار کلی، کاربران، سینماها و لینک‌های مانیتورینگ
 
-## Main Deliverables
-- Product Vision Document
-- Risk Analysis Document
-- UML Diagrams
-- Agile / Jira Artifacts
-- Backend and Frontend Codebase
-- Docker and Infrastructure Setup
-- Final ZIP Submission Package
+## ویژگی‌های قابل اجرا
+
+- رابط فارسی با چیدمان RTL
+- فهرست فیلم‌ها، جزئیات فیلم و سانس‌ها
+- انتخاب صندلی با قفل موقت مبتنی بر Redis
+- جلوگیری از فروش همزمان یک صندلی
+- پرداخت آزمایشی موفق یا ناموفق
+- صدور بلیت با QR
+- اعلان پس از صدور بلیت
+- اعتبارسنجی بلیت برای کارمند کنترل
+- داشبوردهای مدیر سینما و مدیر سیستم
+- متریک‌های Prometheus و مانیتورینگ Grafana
+
+## توضیح معماری
+
+نسخه محلی و قابل اجرا به صورت **modular monolith** با Node.js + TypeScript + Express پیاده‌سازی شده است تا اجرای آن برای پروژه درسی ساده بماند. در عین حال:
+
+- `PostgreSQL` منبع اصلی داده است.
+- `Redis` برای قفل صندلی و هماهنگی رزرو موقت استفاده می‌شود.
+- `RabbitMQ` رویدادهای غیرهمزمان مانند `TicketIssued` را دریافت می‌کند.
+- `Prometheus` و `Grafana` برای مانیتورینگ در Docker Compose قرار گرفته‌اند.
+- پوشه‌های `infra/k8s` و `infra/terraform` نشان می‌دهند که همین ماژول‌ها چگونه در استقرارهای بزرگ‌تر تفکیک می‌شوند.
+
+## کاربران نمایشی
+
+- `admin@example.com / password123`
+- `manager@example.com / password123`
+- `staff@example.com / password123`
+- `customer@example.com / password123`
+
+## اجرای پروژه با Docker
+
+```bash
+docker compose -f infra/docker/docker-compose.yml up --build
+```
+
+## آدرس‌های مهم
+
+- API: `http://localhost:3000`
+- Frontend: `http://localhost:8080`
+- RabbitMQ UI: `http://localhost:15672`
+- Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3001`
+
+## جریان دمو
+
+1. مرورگر را در `http://localhost:8080` باز کنید.
+2. فیلم‌ها را ببینید.
+3. یک سانس انتخاب کنید.
+4. یک صندلی آزاد برگزینید.
+5. صندلی را قفل کنید.
+6. به مرحله پرداخت بروید.
+7. `پرداخت موفق آزمایشی` را بزنید.
+8. بلیت صادرشده را ببینید.
+9. همان کد بلیت را در بخش کارمند کنترل اعتبارسنجی کنید.
+
+## ویژگی‌های تکمیلی
+
+- Redis seat locking
+- RabbitMQ events
+- Prometheus metrics
+- Grafana dashboard
+- Kubernetes manifests
+- Terraform skeleton
+- Incident Management و Postmortem docs
+
+## ساختار مخزن
+
+- `src/backend/` بک‌اند قابل اجرا
+- `src/frontend/` رابط فارسی و RTL
+- `database/` اسکیما و داده‌های نمایشی سینما
+- `infra/docker/` استک اجرایی کامل
+- `infra/k8s/` مانيفست‌های کوبرنتیز
+- `infra/terraform/` اسکلت Infrastructure as Code
+- `docs/` مستندات معماری و گزارش‌ها
+- `tests/` سناریوهای دستی و تست همزمانی
+
+## یادداشت نهایی
+
+این پروژه همچنان یک محصول آموزشی است، اما اکنون تجربه اجرایی آن به یک سامانه فروش بلیت سینما نزدیک‌تر شده و با اسناد معماری، مانیتورینگ، زیرساخت و تست‌های نمایشی هم‌راستا است.

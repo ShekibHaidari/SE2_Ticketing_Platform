@@ -1,0 +1,43 @@
+@startuml
+title Sequence Diagram 02 - Virtual Waiting Room Flow
+
+actor "Customer" as Customer
+participant "Web / Mobile Client" as Client
+participant "API Gateway" as Gateway
+participant "Waiting Room Service" as WaitingRoom
+database "Redis Queue" as Redis
+participant "Event Catalog Service" as Catalog
+
+Customer -> Client: Open high-demand event page
+Client -> Gateway: Request event access
+Gateway -> WaitingRoom: Check traffic and queue status
+
+alt Traffic is normal
+    WaitingRoom --> Gateway: Access allowed
+    Gateway -> Catalog: Load event details
+    Catalog --> Gateway: Event details
+    Gateway --> Client: Show event page
+else Traffic is high
+    WaitingRoom -> Redis: Add user to waiting queue
+    Redis --> WaitingRoom: Queue position saved
+    WaitingRoom --> Gateway: Return queue position
+    Gateway --> Client: Show waiting room page
+    Client --> Customer: Display queue position
+
+    loop Until user turn arrives
+        Client -> Gateway: Poll queue status
+        Gateway -> WaitingRoom: Check user position
+        WaitingRoom -> Redis: Read queue position
+        Redis --> WaitingRoom: Current position
+        WaitingRoom --> Gateway: Queue status
+        Gateway --> Client: Update waiting position
+    end
+
+    WaitingRoom -> Redis: Mark user as allowed
+    WaitingRoom --> Gateway: Access allowed
+    Gateway -> Catalog: Load event details
+    Catalog --> Gateway: Event details
+    Gateway --> Client: Show event page
+end
+
+@enduml

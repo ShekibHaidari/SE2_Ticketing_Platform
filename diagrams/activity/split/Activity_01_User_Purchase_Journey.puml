@@ -1,0 +1,64 @@
+@startuml
+title Activity Diagram 01 - User Purchase Journey
+
+start
+
+:Open ticketing platform;
+
+if (User logged in?) then (Yes)
+  :Go to event discovery page;
+else (No)
+  :Register or login;
+  :Go to event discovery page;
+endif
+
+:Search and filter events;
+:Select an event;
+:View event details;
+
+if (High traffic event?) then (Yes)
+  :Join virtual waiting room;
+  while (User turn arrived?) is (No)
+    :Show queue position;
+    :Wait for access;
+  endwhile (Yes)
+  :Allow user to enter event page;
+endif
+
+:View venue seat map;
+:Select available seat;
+
+if (Seat available?) then (Yes)
+  :Lock seat temporarily;
+  :Create pending reservation;
+else (No)
+  :Show seat unavailable message;
+  :Ask user to select another seat;
+  stop
+endif
+
+:Go to checkout;
+:Start payment process;
+
+if (Payment completed before timeout?) then (Yes)
+  if (Payment successful?) then (Yes)
+    :Verify payment;
+    :Confirm reservation;
+    :Mark seat as booked;
+    :Generate ticket with QR Code;
+    :Send SMS or email confirmation;
+    :Show final ticket to user;
+  else (No)
+    :Cancel reservation;
+    :Release seat lock;
+    :Show payment failed message;
+  endif
+else (No)
+  :Expire reservation;
+  :Release seat lock automatically;
+  :Show timeout message;
+endif
+
+stop
+
+@enduml

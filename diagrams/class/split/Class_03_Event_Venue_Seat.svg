@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="363px" preserveAspectRatio="none" style="width:1256px;height:363px;" version="1.1" viewBox="0 0 1256 363" width="1256px" zoomAndPan="magnify"><defs/><g><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacingAndGlyphs" textLength="410" x="426.5" y="19.2419">Class Diagram 03 - Event, Venue and Seat Model</text><!--MD5=[ac13618b1a974308c1f12eb6c57723dc]
+class Event--><rect fill="#FEFECE" height="212.8008" id="Event" style="stroke: #A80036; stroke-width: 1.5;" width="122" x="6" y="139.5158"/><ellipse cx="47.55" cy="155.5158" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M50.5188,161.1565 Q49.9406,161.4533 49.3,161.594 Q48.6594,161.7502 47.9563,161.7502 Q45.4563,161.7502 44.1281,160.1096 Q42.8156,158.4533 42.8156,155.3283 Q42.8156,152.2033 44.1281,150.5471 Q45.4563,148.8908 47.9563,148.8908 Q48.6594,148.8908 49.3,149.0471 Q49.9563,149.2033 50.5188,149.5002 L50.5188,152.219 Q49.8938,151.6408 49.3,151.3752 Q48.7063,151.094 48.0813,151.094 Q46.7375,151.094 46.05,152.1721 Q45.3625,153.2346 45.3625,155.3283 Q45.3625,157.4221 46.05,158.5002 Q46.7375,159.5627 48.0813,159.5627 Q48.7063,159.5627 49.3,159.2971 Q49.8938,159.0158 50.5188,158.4377 L50.5188,161.1565 Z "/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="31" x="67.45" y="160.1719">Event</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="7" x2="127" y1="171.5158" y2="171.5158"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="50" x="12" y="187.2748">+id: UUID</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="64" x="12" y="202.2566">+title: String</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="103" x="12" y="217.2385">+description: String</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="90" x="12" y="232.2204">+category: String</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="110" x="12" y="247.2023">+startTime: DateTime</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="106" x="12" y="262.1842">+endTime: DateTime</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="104" x="12" y="277.1661">+status: EventStatus</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="103" x="12" y="292.148">+basePrice: Decimal</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="7" x2="127" y1="299.3709" y2="299.3709"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="51" x="12" y="315.1299">+publish()</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="84" x="12" y="330.1117">+updateDetails()</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="44" x="12" y="345.0936">+cancel()</text><!--MD5=[3136c82974d04597cbdda55447e25a1d]
+class Venue--><rect fill="#FEFECE" height="122.9094" id="Venue" style="stroke: #A80036; stroke-width: 1.5;" width="131" x="259" y="62.5158"/><ellipse cx="302.8" cy="78.5158" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M305.7688,84.1565 Q305.1906,84.4533 304.55,84.594 Q303.9094,84.7502 303.2063,84.7502 Q300.7063,84.7502 299.3781,83.1096 Q298.0656,81.4533 298.0656,78.3283 Q298.0656,75.2033 299.3781,73.5471 Q300.7063,71.8908 303.2063,71.8908 Q303.9094,71.8908 304.55,72.0471 Q305.2063,72.2033 305.7688,72.5002 L305.7688,75.219 Q305.1438,74.6408 304.55,74.3752 Q303.9563,74.094 303.3313,74.094 Q301.9875,74.094 301.3,75.1721 Q300.6125,76.2346 300.6125,78.3283 Q300.6125,80.4221 301.3,81.5002 Q301.9875,82.5627 303.3313,82.5627 Q303.9563,82.5627 304.55,82.2971 Q305.1438,82.0158 305.7688,81.4377 L305.7688,84.1565 Z "/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="35" x="323.2" y="83.1719">Venue</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="260" x2="389" y1="94.5158" y2="94.5158"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="50" x="265" y="110.2748">+id: UUID</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="73" x="265" y="125.2566">+name: String</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="62" x="265" y="140.2385">+city: String</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="85" x="265" y="155.2204">+address: String</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="119" x="265" y="170.2023">+totalCapacity: Integer</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="260" x2="389" y1="177.4253" y2="177.4253"/><!--MD5=[9cceea78199e6ad166888528bfc91c0c]
+class Hall--><rect fill="#FEFECE" height="92.9457" id="Hall" style="stroke: #A80036; stroke-width: 1.5;" width="105" x="503" y="77.5158"/><ellipse cx="540.95" cy="93.5158" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M543.9188,99.1565 Q543.3406,99.4533 542.7,99.594 Q542.0594,99.7502 541.3563,99.7502 Q538.8563,99.7502 537.5281,98.1096 Q536.2156,96.4533 536.2156,93.3283 Q536.2156,90.2033 537.5281,88.5471 Q538.8563,86.8908 541.3563,86.8908 Q542.0594,86.8908 542.7,87.0471 Q543.3563,87.2033 543.9188,87.5002 L543.9188,90.219 Q543.2938,89.6408 542.7,89.3752 Q542.1063,89.094 541.4813,89.094 Q540.1375,89.094 539.45,90.1721 Q538.7625,91.2346 538.7625,93.3283 Q538.7625,95.4221 539.45,96.5002 Q540.1375,97.5627 541.4813,97.5627 Q542.1063,97.5627 542.7,97.2971 Q543.2938,97.0158 543.9188,96.4377 L543.9188,99.1565 Z "/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="22" x="560.05" y="98.1719">Hall</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="504" x2="607" y1="109.5158" y2="109.5158"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="50" x="509" y="125.2748">+id: UUID</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="73" x="509" y="140.2566">+name: String</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="93" x="509" y="155.2385">+capacity: Integer</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="504" x2="607" y1="162.4615" y2="162.4615"/><!--MD5=[09a53695e98d4f26e7a054522080af08]
+class Section--><rect fill="#FEFECE" height="92.9457" id="Section" style="stroke: #A80036; stroke-width: 1.5;" width="130" x="721" y="77.5158"/><ellipse cx="761.65" cy="93.5158" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M764.6188,99.1565 Q764.0406,99.4533 763.4,99.594 Q762.7594,99.7502 762.0563,99.7502 Q759.5563,99.7502 758.2281,98.1096 Q756.9156,96.4533 756.9156,93.3283 Q756.9156,90.2033 758.2281,88.5471 Q759.5563,86.8908 762.0563,86.8908 Q762.7594,86.8908 763.4,87.0471 Q764.0563,87.2033 764.6188,87.5002 L764.6188,90.219 Q763.9938,89.6408 763.4,89.3752 Q762.8063,89.094 762.1813,89.094 Q760.8375,89.094 760.15,90.1721 Q759.4625,91.2346 759.4625,93.3283 Q759.4625,95.4221 760.15,96.5002 Q760.8375,97.5627 762.1813,97.5627 Q762.8063,97.5627 763.4,97.2971 Q763.9938,97.0158 764.6188,96.4377 L764.6188,99.1565 Z "/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="41" x="781.35" y="98.1719">Section</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="722" x2="850" y1="109.5158" y2="109.5158"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="50" x="727" y="125.2748">+id: UUID</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="73" x="727" y="140.2566">+name: String</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="118" x="727" y="155.2385">+priceCategory: String</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="722" x2="850" y1="162.4615" y2="162.4615"/><!--MD5=[3640288bb00e105a19a150bd568b9756]
+class Seat--><rect fill="#FEFECE" height="182.837" id="Seat" style="stroke: #A80036; stroke-width: 1.5;" width="128" x="964" y="32.5158"/><ellipse cx="1011.25" cy="48.5158" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M1014.2188,54.1565 Q1013.6406,54.4533 1013,54.594 Q1012.3594,54.7502 1011.6563,54.7502 Q1009.1563,54.7502 1007.8281,53.1096 Q1006.5156,51.4533 1006.5156,48.3283 Q1006.5156,45.2033 1007.8281,43.5471 Q1009.1563,41.8908 1011.6563,41.8908 Q1012.3594,41.8908 1013,42.0471 Q1013.6563,42.2033 1014.2188,42.5002 L1014.2188,45.219 Q1013.5938,44.6408 1013,44.3752 Q1012.4063,44.094 1011.7813,44.094 Q1010.4375,44.094 1009.75,45.1721 Q1009.0625,46.2346 1009.0625,48.3283 Q1009.0625,50.4221 1009.75,51.5002 Q1010.4375,52.5627 1011.7813,52.5627 Q1012.4063,52.5627 1013,52.2971 Q1013.5938,52.0158 1014.2188,51.4377 L1014.2188,54.1565 Z "/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="25" x="1031.75" y="53.1719">Seat</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="965" x2="1091" y1="64.5158" y2="64.5158"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="50" x="970" y="80.2748">+id: UUID</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="108" x="970" y="95.2566">+rowNumber: String</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="108" x="970" y="110.2385">+seatNumber: String</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="116" x="970" y="125.2204">+xCoordinate: Integer</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="116" x="970" y="140.2023">+yCoordinate: Integer</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="97" x="970" y="155.1842">+status: SeatStatus</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="965" x2="1091" y1="162.4072" y2="162.4072"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="86" x="970" y="178.1661">+markAvailable()</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="76" x="970" y="193.148">+markLocked()</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="79" x="970" y="208.1299">+markBooked()</text><!--MD5=[d7adc188ebb695c5dc6cb133a452abfd]
+class EventStatus--><rect fill="#FEFECE" height="107.9276" id="EventStatus" style="stroke: #A80036; stroke-width: 1.5;" width="98" x="275.5" y="221.0158"/><ellipse cx="290.5" cy="237.0158" fill="#EB937F" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M294.6094,243.0158 L286.8906,243.0158 L286.8906,230.6252 L294.6094,230.6252 L294.6094,232.7815 L289.3438,232.7815 L289.3438,235.4533 L294.1094,235.4533 L294.1094,237.6096 L289.3438,237.6096 L289.3438,240.8596 L294.6094,240.8596 L294.6094,243.0158 Z "/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="66" x="304.5" y="241.6719">EventStatus</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="276.5" x2="372.5" y1="253.0158" y2="253.0158"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="34" x="281.5" y="268.7748">DRAFT</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="60" x="281.5" y="283.7566">PUBLISHED</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="61" x="281.5" y="298.7385">CANCELLED</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="65" x="281.5" y="313.7204">COMPLETED</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="276.5" x2="372.5" y1="320.9434" y2="320.9434"/><!--MD5=[5c374ebd0b8704ed7b41dde2c76c6fab]
+class SeatStatus--><rect fill="#FEFECE" height="92.9457" id="SeatStatus" style="stroke: #A80036; stroke-width: 1.5;" width="92" x="1153" y="77.5158"/><ellipse cx="1168" cy="93.5158" fill="#EB937F" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M1172.1094,99.5158 L1164.3906,99.5158 L1164.3906,87.1252 L1172.1094,87.1252 L1172.1094,89.2815 L1166.8438,89.2815 L1166.8438,91.9533 L1171.6094,91.9533 L1171.6094,94.1096 L1166.8438,94.1096 L1166.8438,97.3596 L1172.1094,97.3596 L1172.1094,99.5158 Z "/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="60" x="1182" y="98.1719">SeatStatus</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="1154" x2="1244" y1="109.5158" y2="109.5158"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="57" x="1159" y="125.2748">AVAILABLE</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="43" x="1159" y="140.2566">LOCKED</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="46" x="1159" y="155.2385">BOOKED</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="1154" x2="1244" y1="162.4615" y2="162.4615"/><!--MD5=[318cdbc58de0a67f5a9277f2ddebd381]
+link Venue to Hall--><path d="M390.2,124.0158 C425.78,124.0158 469.33,124.0158 502.65,124.0158 " fill="none" id="Venue-Hall" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="51" x="421" y="119.9129">contains</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="7" x="398.2012" y="138.9417">1</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="20" x="474.9902" y="138.9951">1..*</text><!--MD5=[137a52c762f1309efb44d922dc2321c5]
+link Hall to Section--><path d="M608.06,124.0158 C641.5,124.0158 685.3,124.0158 720.96,124.0158 " fill="none" id="Hall-Section" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="51" x="639" y="119.9129">contains</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="7" x="615.9434" y="139.1616">1</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="20" x="693.2215" y="138.8286">1..*</text><!--MD5=[b657c2f10eaa47361b39f7c9225b9eab]
+link Section to Seat--><path d="M851,124.0158 C885.85,124.0158 928.83,124.0158 963.59,124.0158 " fill="none" id="Section-Seat" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="51" x="882" y="119.9129">contains</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="7" x="858.9203" y="138.9396">1</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="20" x="935.9165" y="138.8342">1..*</text><!--MD5=[e4d62479df6456de5f7c2f0e3d039bbd]
+link Event to Venue--><path d="M128.23,217.2558 C167.47,198.5158 218.64,174.0858 258.76,154.9258 " fill="none" id="Event-Venue" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="69" x="159" y="165.9129">assigned to</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="7" x="136.119" y="228.7388">1</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="7" x="244.1869" y="173.1769">1</text><!--MD5=[eee09d8be8071c139e14a53b82aa9787]
+link Event to EventStatus--><path d="M128.23,252.8558 C171.32,257.7458 228.81,264.2658 270.24,268.9658 " fill="none" id="Event-&gt;EventStatus" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="275.21,269.5358,266.7273,264.5315,270.2429,268.9633,265.8111,272.4789,275.21,269.5358" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[78a1ec07738acf78bb83c8710c564ed2]
+link Seat to SeatStatus--><path d="M1092.41,124.0158 C1110.66,124.0158 1130.31,124.0158 1147.65,124.0158 " fill="none" id="Seat-&gt;SeatStatus" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="1152.96,124.0158,1143.96,120.0158,1147.96,124.0158,1143.96,128.0158,1152.96,124.0158" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[e27da07b7313f4ad2e7e25ffe24fc1cd]
+@startuml
+title Class Diagram 03 - Event, Venue and Seat Model
+
+left to right direction
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+class Event {
+  +id: UUID
+  +title: String
+  +description: String
+  +category: String
+  +startTime: DateTime
+  +endTime: DateTime
+  +status: EventStatus
+  +basePrice: Decimal
+
+  +publish()
+  +updateDetails()
+  +cancel()
+}
+
+class Venue {
+  +id: UUID
+  +name: String
+  +city: String
+  +address: String
+  +totalCapacity: Integer
+}
+
+class Hall {
+  +id: UUID
+  +name: String
+  +capacity: Integer
+}
+
+class Section {
+  +id: UUID
+  +name: String
+  +priceCategory: String
+}
+
+class Seat {
+  +id: UUID
+  +rowNumber: String
+  +seatNumber: String
+  +xCoordinate: Integer
+  +yCoordinate: Integer
+  +status: SeatStatus
+
+  +markAvailable()
+  +markLocked()
+  +markBooked()
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+enum SeatStatus {
+  AVAILABLE
+  LOCKED
+  BOOKED
+}
+
+Venue "1" - - "1..*" Hall : contains
+Hall "1" - - "1..*" Section : contains
+Section "1" - - "1..*" Seat : contains
+Event "1" - - "1" Venue : assigned to
+
+Event - -> EventStatus
+Seat - -> SeatStatus
+
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 14:52:07 AFT 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 21.0.10+7-Ubuntu-124.04
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

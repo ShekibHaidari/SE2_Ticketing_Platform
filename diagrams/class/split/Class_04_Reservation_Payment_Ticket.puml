@@ -1,0 +1,113 @@
+@startuml
+title Class Diagram 04 - Reservation, Payment and Ticket Model
+
+left to right direction
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+class User {
+  +id: UUID
+  +fullName: String
+  +email: String
+}
+
+class Event {
+  +id: UUID
+  +title: String
+  +startTime: DateTime
+}
+
+class Seat {
+  +id: UUID
+  +rowNumber: String
+  +seatNumber: String
+  +status: SeatStatus
+}
+
+class Reservation {
+  +id: UUID
+  +status: ReservationStatus
+  +lockedAt: DateTime
+  +expiresAt: DateTime
+  +createdAt: DateTime
+
+  +confirm()
+  +cancel()
+  +expire()
+}
+
+class ReservationSeat {
+  +id: UUID
+  +lockedPrice: Decimal
+  +createdAt: DateTime
+}
+
+class Payment {
+  +id: UUID
+  +amount: Decimal
+  +currency: String
+  +status: PaymentStatus
+  +gatewayName: String
+  +gatewayTransactionId: String
+  +referenceId: String
+  +paidAt: DateTime
+
+  +verify()
+  +refund()
+}
+
+class Ticket {
+  +id: UUID
+  +ticketCode: String
+  +qrCodeHash: String
+  +issuedAt: DateTime
+  +status: TicketStatus
+
+  +validate()
+  +markAsUsed()
+  +cancel()
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  EXPIRED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  INITIATED
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum TicketStatus {
+  VALID
+  USED
+  CANCELLED
+}
+
+enum SeatStatus {
+  AVAILABLE
+  LOCKED
+  BOOKED
+}
+
+User "1" -- "0..*" Reservation : creates
+Event "1" -- "0..*" Reservation : receives
+Reservation "1" -- "1..*" ReservationSeat : includes
+ReservationSeat "*" -- "1" Seat : locks
+Reservation "1" -- "0..1" Payment : paid by
+Reservation "1" -- "0..*" Ticket : generates
+Ticket "*" -- "1" User : owned by
+Ticket "*" -- "1" Event : belongs to
+Ticket "*" -- "1" Seat : represents
+
+Reservation --> ReservationStatus
+Payment --> PaymentStatus
+Ticket --> TicketStatus
+Seat --> SeatStatus
+
+@enduml

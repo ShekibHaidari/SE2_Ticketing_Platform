@@ -1,0 +1,49 @@
+@startuml
+title Component Diagram 02 - Booking and Reservation Components
+
+left to right direction
+skinparam shadowing false
+skinparam componentStyle rectangle
+
+component "Web / Mobile Client" as Client
+component "API Gateway" as Gateway
+
+package "Booking Flow Components" {
+  component "Event Catalog\nService" as Catalog
+  component "Reservation\nService" as Reservation
+  component "Seat Inventory\nManager" as Inventory
+  component "Payment\nService" as Payment
+  component "Ticket\nService" as Ticket
+}
+
+database "PostgreSQL" as Postgres
+database "Redis" as Redis
+queue "Message Broker" as Broker
+cloud "External Payment Gateway" as PaymentGateway
+
+Client --> Gateway : HTTPS requests
+
+Gateway --> Catalog : event details
+Gateway --> Reservation : lock seat / create reservation
+Gateway --> Payment : checkout
+Gateway --> Ticket : ticket view
+
+Catalog --> Postgres : read events and venues
+
+Reservation --> Inventory : check seat state
+Inventory --> Redis : temporary seat lock with TTL
+Reservation --> Postgres : save pending reservation
+
+Payment --> PaymentGateway : redirect / verify payment
+Payment --> Postgres : save payment status
+
+Payment --> Reservation : confirm or cancel reservation
+Reservation --> Redis : release lock if failed or timeout
+Reservation --> Postgres : update reservation status
+
+Ticket --> Postgres : create ticket and QR hash
+Ticket --> Broker : publish TicketIssued event
+
+Broker --> Ticket : async processing result
+
+@enduml

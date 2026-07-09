@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="850px" preserveAspectRatio="none" style="width:532px;height:850px;" version="1.1" viewBox="0 0 532 850" width="532px" zoomAndPan="magnify"><defs/><g><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacingAndGlyphs" textLength="507" x="13" y="19.2419">Use Case Diagram 04 - Admin Management and Operations</text><!--MD5=[c6128c142a1f9a8ffc3bf6c6dcf357f9]
+cluster Admin and Operations Module--><rect fill="#FFFFFF" height="791" style="stroke: #000000; stroke-width: 1.5;" width="293" x="206" y="48.5158"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="213" x="246" y="65.4818">Admin and Operations Module</text><ellipse cx="352.5048" cy="384.6168" fill="#FEFECE" rx="71.0048" ry="16.601" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="97" x="304.0048" y="390.6508">Manage Users</text><ellipse cx="352.7278" cy="207.4614" fill="#FEFECE" rx="85.2278" ry="19.4456" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="134" x="285.7278" y="213.4954">Manage Organizers</text><ellipse cx="352.5055" cy="110.417" fill="#FEFECE" rx="107.5055" ry="23.9011" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="186" x="259.5055" y="116.4509">Approve Organizer Account</text><ellipse cx="352.5306" cy="805.422" fill="#FEFECE" rx="75.0306" ry="17.4061" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="108" x="298.5306" y="811.4559">Manage Venues</text><ellipse cx="352.3144" cy="288.5787" fill="#FEFECE" rx="118.3144" ry="26.0629" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="210" x="247.3144" y="294.6127">Manage Roles and Permissions</text><ellipse cx="352.6369" cy="547.5432" fill="#FEFECE" rx="93.1369" ry="21.0274" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="153" x="276.1369" y="553.5772">Monitor System Health</text><ellipse cx="352.6904" cy="454.4539" fill="#FEFECE" rx="77.6904" ry="17.9381" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="115" x="295.1904" y="460.4879">Handle Incidents</text><ellipse cx="352.2651" cy="724.4689" fill="#FEFECE" rx="130.2651" ry="28.453" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="236" x="234.2651" y="730.5028">Review Payments and Reservations</text><ellipse cx="352.4019" cy="641.3962" fill="#FEFECE" rx="82.4019" ry="18.8804" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="127" x="288.9019" y="647.4302">Check System Logs</text><!--MD5=[97ab183161fd5d1db7fba7485cf76add]
+entity Admin--><ellipse cx="54" cy="423.5158" fill="#FEFECE" rx="8" ry="8" style="stroke: #A80036; stroke-width: 1.5;"/><path d="M54,431.5158 L54,458.5158 M41,439.5158 L67,439.5158 M54,458.5158 L41,473.5158 M54,458.5158 L67,473.5158 " fill="none" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="96" x="6" y="490.9818">System Admin</text><!--MD5=[fc26a642b145b4db76a180c106645d8f]
+link Admin to ManageUsers--><path d="M102.36,437.4658 C112.09,434.2658 122.32,431.1058 132,428.5158 C184.42,414.4758 244.95,402.6658 289.15,394.8258 " fill="none" id="Admin-&gt;ManageUsers" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="294.19,393.9358,284.631,391.5639,289.2664,394.8064,286.0239,399.4417,294.19,393.9358" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[751e0681ee616d74d78d94a43040a5f9]
+link Admin to ManageOrganizers--><path d="M71.69,413.7758 C93.5,365.7658 136.31,287.1458 198,244.5158 C218.63,230.2558 244.12,221.4658 268.36,216.0458 " fill="none" id="Admin-&gt;ManageOrganizers" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="273.52,214.9458,263.8833,212.9127,268.6302,215.9896,265.5533,220.7365,273.52,214.9458" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[ab986cadc0ee1461f7f421da8eaadca5]
+link Admin to ApproveOrganizer--><path d="M63.28,413.8758 C78.36,350.9658 116.56,230.9858 198,170.5158 C221.57,153.0158 250.91,139.8958 277.6,130.4758 " fill="none" id="Admin-&gt;ApproveOrganizer" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="282.56,128.7558,272.7457,127.9311,277.8369,130.3968,275.3712,135.488,282.56,128.7558" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[362960582fdd00084f32ff68a31d9f24]
+link Admin to ManageVenues--><path d="M59.6,495.1058 C70,565.4658 102.41,708.4658 198,770.5158 C221,785.4458 249.54,794.0458 275.75,798.9858 " fill="none" id="Admin-&gt;ManageVenues" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="280.96,799.9258,272.8094,794.397,276.0388,799.0415,271.3944,802.2709,280.96,799.9258" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[5b6218b4843abe57ecc3ec3819495632]
+link Admin to Roles--><path d="M102.03,418.6558 C111.88,411.2658 122.24,403.5858 132,396.5158 C160.95,375.5358 166.56,367.5458 198,350.5158 C225,335.8958 256.19,322.6858 283.38,312.2458 " fill="none" id="Admin-&gt;Roles" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="288.05,310.4658,278.215,309.9431,283.3796,312.2512,281.0715,317.4157,288.05,310.4658" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[fb03bb4dfe2bd5cada10c2621e6467ab]
+link Admin to Monitor--><path d="M102.31,469.3558 C153.89,485.5358 236.51,511.4458 292.34,528.9558 " fill="none" id="Admin-&gt;Monitor" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="297.32,530.5258,289.9339,524.0109,292.5501,529.0263,287.5347,531.6426,297.32,530.5258" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[f7a32262617513952f9ce7fc64e6ce1c]
+link Admin to Incidents--><path d="M102.31,454.5158 C147.29,454.5158 215.88,454.5158 269.72,454.5158 " fill="none" id="Admin-&gt;Incidents" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="274.89,454.5158,265.89,450.5158,269.89,454.5158,265.89,458.5158,274.89,454.5158" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[ae86dc4b8c9dca249d33eb571b597910]
+link Admin to ReviewPayments--><path d="M66.45,495.3558 C78.41,532.8158 99.92,588.3958 132,628.5158 C161.95,665.9758 209.45,689.1658 252.61,703.3458 " fill="none" id="Admin-&gt;ReviewPayments" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="257.58,704.9458,250.2351,698.3844,252.8197,703.4163,247.7878,706.0008,257.58,704.9458" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[bfa22099cf63544eaa7b5fd12d193408]
+link Admin to Logs--><path d="M67.63,495.1458 C79.38,526.1958 99.97,567.6058 132,591.5158 C170.3,620.1058 222.09,632.7958 265.75,638.2458 " fill="none" id="Admin-&gt;Logs" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="270.76,638.8458,262.2915,633.8174,265.7945,638.2591,261.3528,641.7622,270.76,638.8458" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[832fb14e699d98e78f5f9620fa5bce46]
+link ApproveOrganizer to ManageOrganizers--><path d="M352.5,134.5858 C352.5,149.2158 352.5,167.8558 352.5,182.6358 " fill="none" id="ApproveOrganizer-&gt;ManageOrganizers" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#A80036" points="352.5,187.8858,356.5,178.8858,352.5,182.8858,348.5,178.8858,352.5,187.8858" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="57" x="311.5" y="166.6629">«include»</text><!--MD5=[03a8d85aa169c3d3d0f9548f9646c0fd]
+link Roles to ManageUsers--><path d="M352.5,314.8158 C352.5,329.8758 352.5,348.5458 352.5,362.7658 " fill="none" id="Roles-&gt;ManageUsers" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#A80036" points="352.5,367.7958,356.5,358.7958,352.5,362.7958,348.5,358.7958,352.5,367.7958" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="56" x="312" y="346.6629">«extend»</text><!--MD5=[17deb8453675645ad224bfddac300cd5]
+link Incidents to Monitor--><path d="M352.5,472.7158 C352.5,486.5558 352.5,505.8058 352.5,521.3158 " fill="none" id="Incidents-&gt;Monitor" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#A80036" points="352.5,526.4158,356.5,517.4158,352.5,521.4158,348.5,517.4158,352.5,526.4158" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="56" x="312" y="504.9129">«extend»</text><!--MD5=[7dfeb04ae34545ff41a3fe5ff5ce98c5]
+link Logs to Monitor--><path d="M352.5,622.4958 C352.5,608.5158 352.5,589.3458 352.5,573.8958 " fill="none" id="Logs-&gt;Monitor" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#A80036" points="352.5,568.8058,348.5,577.8058,352.5,573.8058,356.5,577.8058,352.5,568.8058" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="57" x="311.5" y="600.9129">«include»</text><!--MD5=[14ec162fbb5b7084a1f715e38b0f535b]
+link ReviewPayments to Incidents--><path d="M248.6,707.2658 C230.08,700.4158 212.2,690.8558 198,677.5158 C159.83,641.6758 148.66,615.3758 163,565.0158 C171.09,536.6058 174.96,527.0058 198,508.5158 C223.45,488.0958 257.17,475.1258 286.6,467.0358 " fill="none" id="ReviewPayments-&gt;Incidents" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#A80036" points="291.67,465.6758,281.9438,464.1263,286.8384,466.9624,284.0023,471.8569,291.67,465.6758" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="56" x="133" y="579.9129">«extend»</text><!--MD5=[7708e88d77cda181a40d9f4d4e59adf3]
+@startuml
+title Use Case Diagram 04 - Admin Management and Operations
+
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+actor "System Admin" as Admin
+
+rectangle "Admin and Operations Module" {
+  usecase "Manage Users" as ManageUsers
+  usecase "Manage Organizers" as ManageOrganizers
+  usecase "Approve Organizer Account" as ApproveOrganizer
+  usecase "Manage Venues" as ManageVenues
+  usecase "Manage Roles and Permissions" as Roles
+  usecase "Monitor System Health" as Monitor
+  usecase "Handle Incidents" as Incidents
+  usecase "Review Payments and Reservations" as ReviewPayments
+  usecase "Check System Logs" as Logs
+}
+
+Admin - -> ManageUsers
+Admin - -> ManageOrganizers
+Admin - -> ApproveOrganizer
+Admin - -> ManageVenues
+Admin - -> Roles
+Admin - -> Monitor
+Admin - -> Incidents
+Admin - -> ReviewPayments
+Admin - -> Logs
+
+ApproveOrganizer .> ManageOrganizers : <<include>>
+Roles .> ManageUsers : <<extend>>
+Incidents .> Monitor : <<extend>>
+Logs .> Monitor : <<include>>
+ReviewPayments .> Incidents : <<extend>>
+
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 14:52:07 AFT 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 21.0.10+7-Ubuntu-124.04
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

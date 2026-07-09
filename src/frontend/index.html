@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>سامانه فروش بلیت سینما</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <nav class="nav">
+        <div>
+          <p class="eyebrow">Cinema Ticketing Platform</p>
+          <div class="brand">سامانه فروش بلیت سینما</div>
+        </div>
+        <div class="nav__actions">
+          <div id="roleNav" class="nav__links"></div>
+          <div id="authActions" class="auth-panel"></div>
+        </div>
+      </nav>
+      <div class="hero__content">
+        <h1>پنل فارسی فروش بلیت با مدیریت واقعی فیلم، سالن و سانس</h1>
+        <p>
+          مشتری همچنان می‌تواند فیلم و سانس را ببیند و خرید انجام دهد، و مدیر
+          سینما حالا می‌تواند محتوای واقعی سینما را ثبت و مدیریت کند.
+        </p>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="card login-card" id="auth">
+        <div class="section-head">
+          <h2>ورود کاربران</h2>
+          <span class="pill">رابط فارسی و راست‌به‌چپ</span>
+        </div>
+        <div class="login-grid">
+          <label>
+            ایمیل
+            <input id="emailInput" type="email" value="customer@example.com" />
+          </label>
+          <label>
+            رمز عبور
+            <input id="passwordInput" type="password" value="password123" />
+          </label>
+          <button id="loginButton">ورود</button>
+        </div>
+        <div class="demo-buttons">
+          <button class="secondary" data-demo-role="CUSTOMER">ورود نمایشی خریدار</button>
+          <button class="secondary" data-demo-role="CINEMA_MANAGER">ورود نمایشی مدیر سینما</button>
+          <button class="secondary" data-demo-role="STAFF">ورود نمایشی کارمند</button>
+          <button class="secondary" data-demo-role="ADMIN">ورود نمایشی مدیر سیستم</button>
+          <button id="registerDemoButton" class="ghost">ثبت‌نام نمایشی</button>
+        </div>
+        <pre id="authStatus" class="status-box">برای شروع وارد حساب کاربری شوید.</pre>
+      </section>
+
+      <section id="customerOverview" class="card dashboard-overview" data-role-scope="CUSTOMER">
+        <div class="section-head">
+          <h2>داشبورد خریدار</h2>
+          <button class="secondary" data-nav-target="moviesSection">رفتن به فیلم‌ها</button>
+        </div>
+        <div class="cards-grid">
+          <article class="feature-card">
+            <h3>فیلم‌های در حال اکران</h3>
+            <p>فیلم‌های منتشرشده مدیران در این بخش نمایش داده می‌شوند.</p>
+          </article>
+          <article class="feature-card">
+            <h3>انتخاب سانس و صندلی</h3>
+            <p>سانس‌های منتشرشده، نقشه صندلی و رزرو موقت همچنان فعال هستند.</p>
+          </article>
+          <article class="feature-card">
+            <h3>بلیت‌های من</h3>
+            <p>پس از پرداخت موفق، بلیت و QR شما در بخش بلیت‌ها نمایش داده می‌شود.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="managerOverview" class="card dashboard-overview" data-role-scope="CINEMA_MANAGER,ADMIN">
+        <div class="section-head">
+          <h2>داشبورد مدیر سینما</h2>
+          <button id="loadManagerDashboardButton" class="secondary">به‌روزرسانی آمار</button>
+        </div>
+        <div id="managerStatsCards" class="cards-grid"></div>
+        <pre id="managerDashboard" class="status-box">آمار پنل مدیر هنوز بارگذاری نشده است.</pre>
+      </section>
+
+      <section id="staffOverview" class="card dashboard-overview" data-role-scope="STAFF">
+        <div class="section-head">
+          <h2>داشبورد کارمند گیشه</h2>
+          <button class="secondary" data-nav-target="staffSection">رفتن به کنترل بلیت</button>
+        </div>
+        <div class="cards-grid">
+          <article class="feature-card">
+            <h3>اعتبارسنجی کد بلیت</h3>
+            <p>کد بلیت یا داده QR را بررسی کنید و وضعیت استفاده را ببینید.</p>
+          </article>
+          <article class="feature-card">
+            <h3>جستجوی بلیت</h3>
+            <p>برای ورود مخاطب و پاسخ‌گویی سریع، بلیت‌ها را با کد جستجو کنید.</p>
+          </article>
+          <article class="feature-card">
+            <h3>ورود تماشاگران</h3>
+            <p>نتیجه تایید یا رد بلیت به‌صورت شفاف در همین صفحه نشان داده می‌شود.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="adminOverview" class="card dashboard-overview" data-role-scope="ADMIN">
+        <div class="section-head">
+          <h2>داشبورد مدیر سیستم</h2>
+          <button class="secondary" data-nav-target="adminSection">رفتن به وضعیت سیستم</button>
+        </div>
+        <div class="cards-grid">
+          <article class="feature-card">
+            <h3>مدیریت کاربران</h3>
+            <p>مرور وضعیت کاربران، نقش‌ها و دسترسی‌های اصلی سامانه.</p>
+          </article>
+          <article class="feature-card">
+            <h3>مدیریت سینماها</h3>
+            <p>علاوه بر پنل مدیر سینما، این بخش برای مرور وضعیت کلی سامانه باقی مانده است.</p>
+          </article>
+          <article class="feature-card">
+            <h3>وضعیت سرویس و مانیتورینگ</h3>
+            <p>لینک‌های RabbitMQ، Prometheus و Grafana برای مشاهده سریع آماده هستند.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="layout" id="customerFlow" data-role-scope="CUSTOMER">
+        <section class="card" id="moviesSection">
+          <div class="section-head">
+            <h2>صفحه فیلم‌ها</h2>
+            <button id="loadMoviesButton">بارگذاری فیلم‌ها</button>
+          </div>
+          <div class="filters">
+            <input id="searchInput" type="text" placeholder="جستجوی نام فیلم" />
+            <select id="cityFilter">
+              <option value="">همه شهرها</option>
+              <option value="کابل">کابل</option>
+              <option value="هرات">هرات</option>
+            </select>
+            <select id="cinemaFilter">
+              <option value="">همه سینماها</option>
+            </select>
+            <select id="genreFilter">
+              <option value="">همه ژانرها</option>
+              <option value="درام">درام</option>
+              <option value="اکشن">اکشن</option>
+              <option value="کمدی">کمدی</option>
+              <option value="خانوادگی">خانوادگی</option>
+            </select>
+            <input id="dateFilter" type="date" />
+            <button id="applyFiltersButton" class="secondary">اعمال فیلتر</button>
+          </div>
+          <div id="moviesList" class="cards-grid"></div>
+        </section>
+
+        <section class="card" id="showtimesSection">
+          <div class="section-head">
+            <h2>جزئیات فیلم</h2>
+            <button id="refreshMovieButton" class="secondary">تازه‌سازی</button>
+          </div>
+          <div id="movieDetailsPanel" class="movie-details-card">
+            <div id="movieDetailsPoster" class="movie-poster-placeholder">ابتدا یک فیلم را انتخاب کنید.</div>
+            <div class="movie-details-copy">
+              <h3 id="movieDetailsTitle">فیلمی انتخاب نشده است.</h3>
+              <p id="movieDetailsMeta" class="note">ژانر، مدت زمان، زبان و رده سنی اینجا نمایش داده می‌شود.</p>
+              <p id="movieDetailsDescription">پس از انتخاب فیلم، توضیحات کامل و سانس‌های در دسترس را می‌بینید.</p>
+            </div>
+          </div>
+          <pre id="movieDetails" class="status-box">ابتدا یک فیلم را انتخاب کنید.</pre>
+          <div id="showtimesList" class="list"></div>
+        </section>
+      </section>
+
+      <section class="layout" data-role-scope="CUSTOMER">
+        <section class="card" id="seatSection">
+          <div class="section-head">
+            <h2>انتخاب صندلی</h2>
+            <button id="loadSeatMapButton">نمایش نقشه صندلی</button>
+          </div>
+          <div id="seatShowtimeSummary" class="item">عنوان فیلم، سینما، سالن و سانس انتخاب‌شده در اینجا نمایش داده می‌شود.</div>
+          <div class="screen-label">پرده سینما</div>
+          <div class="legend">
+            <span><i class="dot available"></i> آزاد</span>
+            <span><i class="dot selected"></i> انتخاب‌شده</span>
+            <span><i class="dot locked"></i> قفل‌شده</span>
+            <span><i class="dot booked"></i> فروخته‌شده</span>
+          </div>
+          <div id="seatMap" class="seat-sections"></div>
+          <p id="selectedSeatSummary" class="note">هنوز صندلی انتخاب نشده است.</p>
+          <p id="countdownTimer" class="countdown">زمان باقی‌مانده رزرو: -</p>
+          <button id="lockSeatButton">قفل صندلی و ادامه پرداخت</button>
+        </section>
+
+        <section class="card" id="paymentSection">
+          <div class="section-head">
+            <h2>پرداخت</h2>
+            <button id="reloadReservationButton" class="secondary">بارگذاری دوباره رزرو</button>
+          </div>
+          <div id="checkoutSummary" class="item">اطلاعات فیلم، سینما، سالن، سانس، صندلی‌ها و مبلغ کل اینجا نمایش داده می‌شود.</div>
+          <pre id="reservationDetails" class="status-box">رزروی ثبت نشده است.</pre>
+          <div class="actions">
+            <button id="checkoutButton">ادامه پرداخت</button>
+            <button id="paymentSuccessButton" class="secondary">پرداخت موفق آزمایشی</button>
+            <button id="paymentFailButton" class="danger">پرداخت ناموفق آزمایشی</button>
+            <button id="cancelReservationButton" class="ghost">لغو رزرو</button>
+          </div>
+          <pre id="paymentDetails" class="status-box">هنوز پرداختی ایجاد نشده است.</pre>
+        </section>
+      </section>
+
+      <section class="layout" data-role-scope="CUSTOMER">
+        <section class="card" id="finalTicketSection">
+          <div class="section-head">
+            <h2>بلیت نهایی</h2>
+            <button id="viewMyTicketsButton" class="secondary">مشاهده بلیت‌های من</button>
+          </div>
+          <div id="finalTicketDetails" class="list">
+            <div class="item">پس از پرداخت موفق، بلیت نهایی شما در اینجا نمایش داده می‌شود.</div>
+          </div>
+        </section>
+
+        <section class="card" id="ticketsSection">
+          <div class="section-head">
+            <h2>بلیت‌های من</h2>
+            <button id="loadTicketsButton">نمایش بلیت‌ها</button>
+          </div>
+          <div id="ticketsList" class="list"></div>
+        </section>
+
+        <section class="card" id="notificationsSection">
+          <div class="section-head">
+            <h2>اعلان‌ها</h2>
+            <button id="loadNotificationsButton" class="secondary">نمایش اعلان‌ها</button>
+          </div>
+          <div id="notificationsList" class="list"></div>
+        </section>
+      </section>
+
+      <section class="layout manager-layout" data-role-scope="CINEMA_MANAGER,ADMIN">
+        <section class="card" id="managerMoviesSection">
+          <div class="section-head">
+            <h2 id="movieFormTitle">افزودن فیلم جدید</h2>
+            <div class="placeholder-actions">
+              <button id="saveMovieButton">ذخیره فیلم</button>
+              <button id="cancelMovieEditButton" class="ghost" hidden>لغو ویرایش</button>
+            </div>
+          </div>
+          <input id="movieEditIdInput" type="hidden" />
+          <div class="form-grid">
+            <label>نام فیلم <input id="movieTitleInput" type="text" /></label>
+            <label>ژانر <input id="movieGenreInput" type="text" /></label>
+            <label>مدت زمان به دقیقه <input id="movieDurationInput" type="number" min="1" /></label>
+            <label>رده سنی <input id="movieAgeRatingInput" type="text" value="عمومی" /></label>
+            <label>زبان <input id="movieLanguageInput" type="text" value="دری" /></label>
+            <label>وضعیت
+              <select id="movieStatusInput">
+                <option value="PUBLISHED">منتشرشده</option>
+                <option value="DRAFT">پیش‌نویس</option>
+              </select>
+            </label>
+          </div>
+          <label>توضیحات <textarea id="movieDescriptionInput" rows="4"></textarea></label>
+          <label>لینک پوستر <input id="moviePosterInput" type="url" placeholder="https://..." /></label>
+          <pre id="managerMovieStatus" class="status-box">هنوز فیلمی ثبت یا ویرایش نشده است.</pre>
+        </section>
+
+        <section class="card" id="managerMoviesListSection">
+          <div class="section-head">
+            <h2>فهرست فیلم‌های من</h2>
+            <button id="refreshManagerMoviesButton" class="secondary">بارگذاری دوباره</button>
+          </div>
+          <div id="managerMoviesList" class="list"></div>
+        </section>
+      </section>
+
+      <section class="layout manager-layout" data-role-scope="CINEMA_MANAGER,ADMIN">
+        <section class="card" id="managerCinemasSection">
+          <div class="section-head">
+            <h2>افزودن سینما</h2>
+            <button id="saveCinemaButton">ذخیره سینما</button>
+          </div>
+          <div class="form-grid">
+            <label>نام سینما <input id="cinemaNameInput" type="text" /></label>
+            <label>شهر <input id="cinemaCityInput" type="text" /></label>
+            <label>شماره تماس <input id="cinemaPhoneInput" type="text" /></label>
+          </div>
+          <label>آدرس <textarea id="cinemaAddressInput" rows="3"></textarea></label>
+          <pre id="managerCinemaStatus" class="status-box">هنوز سینمای جدیدی ثبت نشده است.</pre>
+          <div id="managerCinemasList" class="list"></div>
+        </section>
+
+        <section class="card" id="managerHallsSection">
+          <div class="section-head">
+            <h2>افزودن سالن و ظرفیت</h2>
+            <button id="saveHallButton">ساخت سالن</button>
+          </div>
+          <div class="form-grid">
+            <label>انتخاب سینما
+              <select id="hallCinemaSelect"></select>
+            </label>
+            <label>نام سالن <input id="hallNameInput" type="text" /></label>
+            <label>تعداد ردیف <input id="hallRowsInput" type="number" min="1" value="6" /></label>
+            <label>تعداد صندلی در هر ردیف <input id="hallSeatsPerRowInput" type="number" min="1" value="10" /></label>
+            <label>ظرفیت محاسبه‌شده <input id="hallCapacityInput" type="number" readonly /></label>
+          </div>
+          <pre id="managerHallStatus" class="status-box">هنوز سالنی ساخته نشده است.</pre>
+          <div id="managerHallsList" class="list"></div>
+        </section>
+      </section>
+
+      <section class="layout manager-layout" data-role-scope="CINEMA_MANAGER,ADMIN" id="managerSection">
+        <section class="card" id="managerShowtimesSection">
+          <div class="section-head">
+            <h2>ساخت سانس</h2>
+            <button id="saveShowtimeButton">ذخیره سانس</button>
+          </div>
+          <div class="form-grid">
+            <label>انتخاب فیلم
+              <select id="showtimeMovieSelect"></select>
+            </label>
+            <label>انتخاب سینما
+              <select id="showtimeCinemaSelect"></select>
+            </label>
+            <label>انتخاب سالن
+              <select id="showtimeHallSelect"></select>
+            </label>
+            <label>تاریخ و ساعت شروع <input id="showtimeStartInput" type="datetime-local" /></label>
+            <label>تاریخ و ساعت پایان <input id="showtimeEndInput" type="datetime-local" /></label>
+            <label>قیمت بلیت <input id="showtimePriceInput" type="number" min="1" value="250" /></label>
+            <label>وضعیت
+              <select id="showtimeStatusInput">
+                <option value="PUBLISHED">منتشرشده</option>
+                <option value="DRAFT">پیش‌نویس</option>
+              </select>
+            </label>
+          </div>
+          <pre id="managerShowtimeStatus" class="status-box">هنوز سانسی ساخته نشده است.</pre>
+        </section>
+
+        <section class="card" id="managerShowtimesListSection">
+          <div class="section-head">
+            <h2>فهرست سانس‌ها</h2>
+            <button id="refreshManagerShowtimesButton" class="secondary">بارگذاری دوباره</button>
+          </div>
+          <div id="managerShowtimesList" class="list"></div>
+        </section>
+      </section>
+
+      <section class="layout manager-layout" data-role-scope="CINEMA_MANAGER,ADMIN">
+        <section class="card" id="managerSalesSection">
+          <div class="section-head">
+            <h2>گزارش فروش مدیر سینما</h2>
+            <button id="loadSalesReportButton" class="secondary">بارگذاری گزارش</button>
+          </div>
+          <div id="managerSalesCards" class="cards-grid"></div>
+          <div id="salesReportList" class="list"></div>
+        </section>
+      </section>
+
+      <section class="layout" data-role-scope="STAFF">
+        <section class="card" id="staffSection">
+          <div class="section-head">
+            <h2>کنترل بلیت</h2>
+            <span class="pill">اعتبارسنجی ورود</span>
+          </div>
+          <label>
+            کد بلیت را وارد کنید
+            <input id="ticketCodeInput" type="text" placeholder="مثلاً CIN-20260710-A8K92Q" />
+          </label>
+          <div class="row-actions">
+            <button id="searchTicketButton" class="secondary">جستجوی بلیت</button>
+            <button id="validateTicketButton">اعتبارسنجی و ثبت ورود</button>
+          </div>
+          <div id="staffTicketResult" class="list">
+            <div class="item">پس از جستجو، جزئیات بلیت در اینجا نمایش داده می‌شود.</div>
+          </div>
+          <pre id="staffValidationResult" class="status-box">نتیجه اعتبارسنجی اینجا نمایش داده می‌شود.</pre>
+        </section>
+      </section>
+
+      <section class="layout" data-role-scope="ADMIN">
+        <section class="card" id="adminSection">
+          <div class="section-head">
+            <h2>داشبورد مدیر سیستم</h2>
+            <button id="loadAdminSummaryButton">وضعیت سیستم</button>
+          </div>
+          <div class="placeholder-actions">
+            <button class="ghost">مدیریت کاربران</button>
+            <button class="ghost">مدیریت سینماها</button>
+            <button class="ghost">گزارش کلی فروش</button>
+          </div>
+          <pre id="adminSummary" class="status-box">اطلاعات مدیریتی هنوز بارگذاری نشده است.</pre>
+          <div class="links">
+            <a href="http://localhost:15672" target="_blank" rel="noreferrer">RabbitMQ</a>
+            <a href="http://localhost:9090" target="_blank" rel="noreferrer">Prometheus</a>
+            <a href="http://localhost:3001" target="_blank" rel="noreferrer">Grafana</a>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="section-head">
+            <h2>بازنشانی داده آزمایشی</h2>
+            <button id="resetDemoButton" class="danger">بازنشانی داده‌ها</button>
+          </div>
+          <pre id="resetStatus" class="status-box">داده‌های نمایشی هنوز بازنشانی نشده‌اند.</pre>
+        </section>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

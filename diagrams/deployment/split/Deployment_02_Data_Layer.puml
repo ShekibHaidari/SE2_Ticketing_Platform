@@ -1,0 +1,58 @@
+@startuml
+title Deployment Diagram 02 - Data Layer and Stateful Services
+
+left to right direction
+skinparam shadowing false
+skinparam componentStyle rectangle
+
+node "Kubernetes Cluster" as K8s {
+  node "Application Namespace" as AppNS {
+    node "Application Pods" as Apps {
+      component "API Gateway" as Gateway
+      component "Identity Service" as Identity
+      component "Event Catalog Service" as Catalog
+      component "Waiting Room Service" as WaitingRoom
+      component "Reservation Service" as Reservation
+      component "Payment Service" as Payment
+      component "Ticket Service" as Ticket
+      component "Notification Service" as Notification
+      component "Analytics Service" as Analytics
+    }
+  }
+}
+
+frame "Data and Messaging Layer" as DataLayer {
+  database "PostgreSQL Primary" as PgPrimary
+  database "PostgreSQL Read Replica" as PgReplica
+  database "Redis Primary" as RedisPrimary
+  database "Redis Replica" as RedisReplica
+  queue "RabbitMQ / Kafka Cluster" as BrokerCluster
+  folder "Persistent Backups" as Backups
+  cloud "Object Storage\nTicket QR / Reports" as ObjectStore
+}
+
+Gateway --> PgReplica : read-heavy reporting lookups
+Identity --> PgPrimary : user writes
+Catalog --> PgPrimary : event writes
+Catalog --> PgReplica : event reads
+WaitingRoom --> RedisPrimary : queue tokens
+Reservation --> PgPrimary : reservation writes
+Reservation --> RedisPrimary : seat locks
+Payment --> PgPrimary : payment state
+Ticket --> PgPrimary : ticket issuance
+Ticket --> ObjectStore : QR images and reports
+Notification --> BrokerCluster : publish delivery tasks
+Analytics --> PgReplica : analytics reads
+Analytics --> BrokerCluster : consume events
+
+PgPrimary --> PgReplica : streaming replication
+RedisPrimary --> RedisReplica : asynchronous replication
+PgPrimary --> Backups : scheduled snapshots
+BrokerCluster --> Backups : durable exports
+ObjectStore --> Backups : lifecycle backup policy
+
+Reservation --> BrokerCluster : reservation events
+Payment --> BrokerCluster : payment confirmed events
+Ticket --> BrokerCluster : ticket issued events
+
+@enduml

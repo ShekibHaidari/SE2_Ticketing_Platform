@@ -1,0 +1,42 @@
+@startuml
+title Use Case Diagram 03 - Organizer Management
+
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+actor "Event Organizer" as Organizer
+
+rectangle "Organizer Management Module" {
+  usecase "Register / Login" as Login
+  usecase "Create Event" as CreateEvent
+  usecase "Update Event Details" as UpdateEvent
+  usecase "Configure Venue Layout" as VenueLayout
+  usecase "Define Seat Pricing" as Pricing
+  usecase "Set Event Schedule" as Schedule
+  usecase "Publish Event" as Publish
+  usecase "View Sales Dashboard" as Dashboard
+  usecase "View Revenue Reports" as Reports
+  usecase "View Remaining Seat Capacity" as Capacity
+}
+
+Organizer --> Login
+Organizer --> CreateEvent
+Organizer --> UpdateEvent
+Organizer --> VenueLayout
+Organizer --> Pricing
+Organizer --> Schedule
+Organizer --> Publish
+Organizer --> Dashboard
+Organizer --> Reports
+Organizer --> Capacity
+
+Publish .> CreateEvent : <<include>>
+Publish .> VenueLayout : <<include>>
+Publish .> Pricing : <<include>>
+Publish .> Schedule : <<include>>
+
+Reports .> Dashboard : <<extend>>
+Capacity .> Dashboard : <<extend>>
+
+@enduml

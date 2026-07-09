@@ -1,0 +1,38 @@
+@startuml
+title Use Case Diagram 04 - Admin Management and Operations
+
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+actor "System Admin" as Admin
+
+rectangle "Admin and Operations Module" {
+  usecase "Manage Users" as ManageUsers
+  usecase "Manage Organizers" as ManageOrganizers
+  usecase "Approve Organizer Account" as ApproveOrganizer
+  usecase "Manage Venues" as ManageVenues
+  usecase "Manage Roles and Permissions" as Roles
+  usecase "Monitor System Health" as Monitor
+  usecase "Handle Incidents" as Incidents
+  usecase "Review Payments and Reservations" as ReviewPayments
+  usecase "Check System Logs" as Logs
+}
+
+Admin --> ManageUsers
+Admin --> ManageOrganizers
+Admin --> ApproveOrganizer
+Admin --> ManageVenues
+Admin --> Roles
+Admin --> Monitor
+Admin --> Incidents
+Admin --> ReviewPayments
+Admin --> Logs
+
+ApproveOrganizer .> ManageOrganizers : <<include>>
+Roles .> ManageUsers : <<extend>>
+Incidents .> Monitor : <<extend>>
+Logs .> Monitor : <<include>>
+ReviewPayments .> Incidents : <<extend>>
+
+@enduml

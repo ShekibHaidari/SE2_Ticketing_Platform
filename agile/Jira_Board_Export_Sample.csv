@@ -1,0 +1,8 @@
+Issue Key,Summary,Issue Type,Status,Priority,Assignee,Story Points,Epic Link
+ETP-1,Create customer registration endpoint,Story,Done,High,Backend Developer,5,E1
+ETP-2,Design event search filters,Story,Done,High,Frontend Developer,5,E2
+ETP-3,Implement seat lock workflow design,Story,In Progress,High,Backend Developer,8,E3
+ETP-4,Prepare payment callback contract,Story,To Do,High,System Analyst,5,E4
+ETP-5,Define QR ticket issuance flow,Story,To Do,Medium,Backend Developer,8,E5
+ETP-6,Prepare Kubernetes deployment manifests,Task,Done,Medium,DevOps Engineer,5,E6
+ETP-7,Review concurrency test cases,Task,To Do,Medium,QA Engineer,3,E3

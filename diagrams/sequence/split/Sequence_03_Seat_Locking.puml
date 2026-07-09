@@ -1,0 +1,31 @@
+@startuml
+title Sequence Diagram 03 - Temporary Seat Locking with Redis
+
+actor "Customer" as Customer
+participant "Web / Mobile Client" as Client
+participant "API Gateway" as Gateway
+participant "Reservation Service" as Reservation
+database "Redis" as Redis
+database "PostgreSQL" as DB
+
+Customer -> Client: Select seat
+Client -> Gateway: POST /reservations/lock-seat
+Gateway -> Reservation: Lock selected seat
+
+Reservation -> Redis: SET seat_lock:eventId:seatId userId EX 600 NX
+
+alt Lock is successful
+    Redis --> Reservation: OK
+    Reservation -> DB: Create reservation with PENDING status
+    DB --> Reservation: Reservation saved
+    Reservation --> Gateway: Seat locked successfully
+    Gateway --> Client: Show checkout page
+    Client --> Customer: Seat is locked for 10 minutes
+else Seat is already locked
+    Redis --> Reservation: Lock rejected
+    Reservation --> Gateway: Seat is not available
+    Gateway --> Client: Show seat unavailable message
+    Client --> Customer: Select another seat
+end
+
+@enduml
