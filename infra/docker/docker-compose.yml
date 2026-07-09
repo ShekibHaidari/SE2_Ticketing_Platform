@@ -1,0 +1,94 @@
+services:
+  ticketing-postgres:
+    image: postgres:16-alpine
+    container_name: ticketing-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ticketing_db}
+      POSTGRES_USER: ${POSTGRES_USER:-ticketing_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ticketing_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../../database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ../../database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+
+  ticketing-redis:
+    image: redis:7-alpine
+    container_name: ticketing-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  ticketing-rabbitmq:
+    image: rabbitmq:3-management
+    container_name: ticketing-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-guest}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  ticketing-api:
+    build:
+      context: ../..
+      dockerfile: src/backend/Dockerfile
+    container_name: ticketing-api
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      NODE_ENV: development
+      DATABASE_URL: postgres://${POSTGRES_USER:-ticketing_user}:${POSTGRES_PASSWORD:-ticketing_password}@ticketing-postgres:5432/${POSTGRES_DB:-ticketing_db}
+      REDIS_URL: redis://ticketing-redis:6379
+      RABBITMQ_URL: amqp://${RABBITMQ_DEFAULT_USER:-guest}:${RABBITMQ_DEFAULT_PASS:-guest}@ticketing-rabbitmq:5672
+      JWT_SECRET: ${JWT_SECRET:-dev_secret_change_me}
+      RESERVATION_TTL_SECONDS: ${RESERVATION_TTL_SECONDS:-600}
+    depends_on:
+      - ticketing-postgres
+      - ticketing-redis
+      - ticketing-rabbitmq
+    ports:
+      - "3000:3000"
+
+  ticketing-frontend:
+    build:
+      context: ../..
+      dockerfile: src/frontend/Dockerfile
+    container_name: ticketing-frontend
+    restart: unless-stopped
+    depends_on:
+      - ticketing-api
+    ports:
+      - "8080:80"
+
+  ticketing-prometheus:
+    image: prom/prometheus:latest
+    container_name: ticketing-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - ticketing-api
+    ports:
+      - "9090:9090"
+
+  ticketing-grafana:
+    image: grafana/grafana:latest
+    container_name: ticketing-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    depends_on:
+      - ticketing-prometheus
+    ports:
+      - "3001:3000"
+
+volumes:
+  postgres_data:
+  rabbitmq_data:

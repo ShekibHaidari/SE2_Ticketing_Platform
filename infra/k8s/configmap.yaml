@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ticketing-platform-config
+  namespace: ticketing-platform
+  labels:
+    app.kubernetes.io/part-of: se2-ticketing-platform
+data:
+  NODE_ENV: production
+  APP_PORT: "3000"
+  DATABASE_HOST: postgres-service
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: ticketing
+  REDIS_HOST: redis-service
+  REDIS_PORT: "6379"
+  BROKER_HOST: rabbitmq-service
+  BROKER_PORT: "5672"
+  OBJECT_STORAGE_BUCKET: ticketing-artifacts
+  MONITORING_NAMESPACE: monitoring

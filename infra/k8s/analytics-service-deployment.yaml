@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-service
+  namespace: ticketing-platform
+  labels:
+    app: analytics-service
+    tier: application
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analytics-service
+  template:
+    metadata:
+      labels:
+        app: analytics-service
+        tier: application
+    spec:
+      containers:
+        - name: analytics-service
+          image: ticketing/analytics-service:latest
+          ports:
+            - containerPort: 3008
+          envFrom:
+            - configMapRef:
+                name: ticketing-platform-config
+            - secretRef:
+                name: ticketing-platform-secrets
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "400m"
+              memory: "512Mi"

@@ -1,0 +1,53 @@
+@startuml
+title Deployment Diagram 03 - Monitoring and Operations
+
+left to right direction
+skinparam shadowing false
+
+actor "DevOps Engineer" as DevOps
+actor "On-Call Engineer" as OnCall
+
+node "Kubernetes Cluster" as K8s {
+  node "Application Pods" as Apps {
+    component "API Gateway" as Gateway
+    component "Reservation Service" as Reservation
+    component "Payment Service" as Payment
+    component "Notification Service" as Notification
+  }
+
+  node "Observability Namespace" as Obs {
+    component "Prometheus" as Prometheus
+    component "Grafana" as Grafana
+    component "Alertmanager" as Alertmanager
+    component "Log Collector" as Logs
+  }
+}
+
+database "PostgreSQL" as Postgres
+database "Redis" as Redis
+queue "RabbitMQ / Kafka" as Broker
+
+cloud "Email / Slack Alert Channel" as AlertChannel
+
+Prometheus --> Gateway : scrape metrics
+Prometheus --> Reservation : scrape metrics
+Prometheus --> Payment : scrape metrics
+Prometheus --> Notification : scrape metrics
+Prometheus --> Postgres : database metrics
+Prometheus --> Redis : redis metrics
+Prometheus --> Broker : broker metrics
+
+Logs --> Gateway : collect logs
+Logs --> Reservation : collect logs
+Logs --> Payment : collect logs
+Logs --> Notification : collect logs
+
+Grafana --> Prometheus : query metrics
+Alertmanager --> Prometheus : receive alert rules
+Alertmanager --> AlertChannel : send alerts
+
+DevOps --> Grafana : view dashboards
+OnCall --> AlertChannel : receive incident alerts
+OnCall --> K8s : investigate and restart services
+
+@enduml

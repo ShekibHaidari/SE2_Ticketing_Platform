@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: waiting-room-service
+  namespace: ticketing-platform
+  labels:
+    app: waiting-room-service
+    tier: application
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: waiting-room-service
+  template:
+    metadata:
+      labels:
+        app: waiting-room-service
+        tier: application
+    spec:
+      containers:
+        - name: waiting-room-service
+          image: ticketing/waiting-room-service:latest
+          ports:
+            - containerPort: 3003
+          envFrom:
+            - configMapRef:
+                name: ticketing-platform-config
+            - secretRef:
+                name: ticketing-platform-secrets
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "192Mi"
+            limits:
+              cpu: "600m"
+              memory: "768Mi"
