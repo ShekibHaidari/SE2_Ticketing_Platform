@@ -1,30 +1,64 @@
-# SE2 Ticketing Platform
+# سینما‌بلیت — پلتفرم رزرو بلیت سینما
 
-This project is developed for the Software Engineering II course.
+پروژه‌ی درس **مهندسی نرم‌افزار ۲** — پلتفرم فارسی/دری رزرو آنلاین بلیت سینما با UI راست‌چین (RTL).
 
-## Project Topic
-Design and Architecture of an End-to-End Event Ticketing Platform
+## قابلیت‌ها
 
-## Main Goal
-The goal of this project is to design a scalable, reliable, and highly available online ticketing platform that supports event discovery, real-time seat selection, temporary seat locking, secure payment, ticket issuance with QR code, and asynchronous notifications.
+- ورود مبتنی بر نقش: خریدار، مدیر سینما، کارمند گیشه، مدیر سیستم
+- مرور فیلم‌ها با جستجو و فیلتر
+- صفحه جزئیات فیلم و انتخاب سانس
+- نقشه‌ی سالن با وضعیت‌های صندلی (آزاد، انتخاب شده، در حال رزرو، فروخته شده)
+- قفل موقت صندلی با تایمر انقضا
+- پرداخت شبیه‌سازی شده (موفق/ناموفق)
+- بلیت نهایی با کد یکتا و QR
+- کنترل بلیت توسط کارمند (هر بلیت فقط یک بار)
+- داشبورد مدیر سینما: افزودن فیلم، سالن، سانس، گزارش فروش
+- داشبورد مدیر سیستم: کاربران، نقش‌ها، آمار و وضعیت سیستم
 
-## Main Technologies
-- Ubuntu
-- VS Code
-- Node.js / TypeScript
-- PostgreSQL
-- Redis
-- RabbitMQ or Kafka
-- Docker
-- Kubernetes
-- Terraform
-- diagrams.net / draw.io
+## کاربران نمونه
 
-## Main Deliverables
-- Product Vision Document
-- Risk Analysis Document
-- UML Diagrams
-- Agile / Jira Artifacts
-- Backend and Frontend Codebase
-- Docker and Infrastructure Setup
-- Final ZIP Submission Package
+رمز عبور همه: `password123`
+
+| ایمیل | نقش |
+|---|---|
+| customer@example.com | خریدار |
+| manager@example.com | مدیر سینما |
+| staff@example.com | کارمند گیشه |
+| admin@example.com | مدیر سیستم |
+
+## اجرای محلی
+
+```bash
+bun install
+bun dev
+```
+
+سپس مرورگر را روی `http://localhost:8080` باز کنید.
+
+## معماری
+
+- **Frontend**: TanStack Start (React 19) + Vite + Tailwind CSS v4 + shadcn/ui
+- **لایه‌ی داده**: مدل داده‌ی رابطه‌ای (User, Cinema, Hall, Movie, Showtime, Reservation, Ticket, Payment, SeatLock) ذخیره شده در `localStorage` برای دموی محلی — جایگزینی با یک بک‌اند واقعی (مثلاً Supabase) از طریق لایه‌ی `src/lib/store.ts` ساده است.
+- **جلوگیری از رزرو دوگانه**:
+  - قفل صندلی هنگام انتخاب با انقضای زمانی
+  - بررسی مجدد صندلی‌ها هنگام صدور نهایی بلیت
+- **QR بلیت**: با `qrcode.react`
+- **RTL**: کل رابط راست‌چین با فونت **Vazirmatn**
+
+## ساختار پوشه‌ها
+
+```
+src/
+  routes/           # صفحات (TanStack Router)
+  components/       # اجزای UI
+  lib/store.ts      # لایه‌ی داده و منطق کسب‌وکار
+  lib/auth.tsx      # مدیریت نشست و نقش‌ها
+  lib/format.ts     # فرمت اعداد و تاریخ فارسی
+docs/
+  srs.pdf           # سند SRS اصلی
+  SRS.md            # فهرست سند
+```
+
+## مستندات
+
+سند SRS در `docs/srs.pdf` موجود است.

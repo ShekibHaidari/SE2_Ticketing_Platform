@@ -1,14 +1,58 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+.output
+.vinxi
+.tanstack/**
+.nitro
+*.local
+
+# Wrangler / Cloudflare
+.wrangler/
+.dev.vars
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Node / package managers
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun.lockb
+
+# Build outputs
 dist/
 build/
+.output/
+.wrangler/
+.netlify/
+.vercel/
+
+# Environment files
 .env
 .env.local
+.env.*.local
+
+# OS / editor
 .DS_Store
 .vscode/
-*.log
-coverage/
-__pycache__/
-.terraform/
-terraform.tfstate
-terraform.tfstate.backup
-final-submission/*.zip
+.idea/
