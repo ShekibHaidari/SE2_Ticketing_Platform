@@ -116,7 +116,12 @@ export function Layout({ children }: { children: ReactNode }) {
           <div>
             <div className="font-semibold mb-2">درباره</div>
             <p className="text-muted-foreground text-xs leading-relaxed">
-              پروژه‌ی درس مهندسی نرم‌افزار ۲ · نسخه‌ی آزمایشی
+              پروژه‌ی درس مهندسی نرم‌افزار ۲
+            </p>
+            <p className="text-muted-foreground text-xs leading-relaxed mt-2">
+              تهیه و توسعه:
+              {" "}احمدشکیب حیدری
+              {" "}و مصطفی صادفی
             </p>
           </div>
         </div>

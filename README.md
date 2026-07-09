@@ -1,64 +1,59 @@
-# سینما‌بلیت — پلتفرم رزرو بلیت سینما
+# Cinema Ticketing Platform
+Software Engineering II Final Project
 
-پروژه‌ی درس **مهندسی نرم‌افزار ۲** — پلتفرم فارسی/دری رزرو آنلاین بلیت سینما با UI راست‌چین (RTL).
+## Project Overview
 
-## قابلیت‌ها
+This project is a Persian/Dari cinema reservation platform built as a final Software Engineering II submission. It demonstrates a complete ticket booking workflow with role-based access, RTL user experience, simulated payments, QR-based tickets, and management dashboards for cinema operations.
 
-- ورود مبتنی بر نقش: خریدار، مدیر سینما، کارمند گیشه، مدیر سیستم
-- مرور فیلم‌ها با جستجو و فیلتر
-- صفحه جزئیات فیلم و انتخاب سانس
-- نقشه‌ی سالن با وضعیت‌های صندلی (آزاد، انتخاب شده، در حال رزرو، فروخته شده)
-- قفل موقت صندلی با تایمر انقضا
-- پرداخت شبیه‌سازی شده (موفق/ناموفق)
-- بلیت نهایی با کد یکتا و QR
-- کنترل بلیت توسط کارمند (هر بلیت فقط یک بار)
-- داشبورد مدیر سینما: افزودن فیلم، سالن، سانس، گزارش فروش
-- داشبورد مدیر سیستم: کاربران، نقش‌ها، آمار و وضعیت سیستم
+## Features
 
-## کاربران نمونه
+- Role-based authentication for customer, cinema manager, ticket staff, and system administrator
+- Movie browsing with search, filtering, and showtime selection
+- Interactive seat map with seat availability, temporary reservation locks, and conflict prevention
+- Simulated checkout flow with payment success or failure handling
+- QR ticket generation and single-use ticket validation for staff
+- Management dashboards for movies, halls, showtimes, users, and platform statistics
+- Persian RTL interface styled with Vazirmatn and modern component-driven UI
 
-رمز عبور همه: `password123`
+## Roles
 
-| ایمیل | نقش |
-|---|---|
-| customer@example.com | خریدار |
-| manager@example.com | مدیر سینما |
-| staff@example.com | کارمند گیشه |
-| admin@example.com | مدیر سیستم |
+- Customer: browse movies, choose seats, pay, and access purchased tickets
+- Cinema Manager: manage movies, halls, showtimes, and monitor cinema activity
+- Ticket Staff: validate tickets at entry and prevent reuse
+- System Administrator: review users, roles, and overall system status
 
-## اجرای محلی
+## Setup Commands
 
 ```bash
-bun install
-bun dev
+npm install
+npm run build
+npm run dev
 ```
 
-سپس مرورگر را روی `http://localhost:8080` باز کنید.
+Open the application in your browser at `http://localhost:8080`.
 
-## معماری
+## Demo Accounts
 
-- **Frontend**: TanStack Start (React 19) + Vite + Tailwind CSS v4 + shadcn/ui
-- **لایه‌ی داده**: مدل داده‌ی رابطه‌ای (User, Cinema, Hall, Movie, Showtime, Reservation, Ticket, Payment, SeatLock) ذخیره شده در `localStorage` برای دموی محلی — جایگزینی با یک بک‌اند واقعی (مثلاً Supabase) از طریق لایه‌ی `src/lib/store.ts` ساده است.
-- **جلوگیری از رزرو دوگانه**:
-  - قفل صندلی هنگام انتخاب با انقضای زمانی
-  - بررسی مجدد صندلی‌ها هنگام صدور نهایی بلیت
-- **QR بلیت**: با `qrcode.react`
-- **RTL**: کل رابط راست‌چین با فونت **Vazirmatn**
+Password for all demo accounts: `password123`
 
-## ساختار پوشه‌ها
+| Email | Role |
+|---|---|
+| customer@example.com | Customer |
+| manager@example.com | Cinema Manager |
+| staff@example.com | Ticket Staff |
+| admin@example.com | System Administrator |
 
-```
-src/
-  routes/           # صفحات (TanStack Router)
-  components/       # اجزای UI
-  lib/store.ts      # لایه‌ی داده و منطق کسب‌وکار
-  lib/auth.tsx      # مدیریت نشست و نقش‌ها
-  lib/format.ts     # فرمت اعداد و تاریخ فارسی
-docs/
-  srs.pdf           # سند SRS اصلی
-  SRS.md            # فهرست سند
-```
+## Final Branch Name
 
-## مستندات
+`final/cinema-ticketing-platform`
 
-سند SRS در `docs/srs.pdf` موجود است.
+## Screenshots
+
+Add final UI screenshots here before submission.
+
+## Technical Notes
+
+- Frontend stack: TanStack Start, React 19, Vite, Tailwind CSS v4, and shadcn/ui
+- Data layer: local demo persistence centered in `src/lib/store.ts`
+- SSR entry: `src/server.ts`
+- Main documentation: `docs/SRS.md` and `docs/srs.pdf`
