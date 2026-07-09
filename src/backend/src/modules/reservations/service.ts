@@ -24,14 +24,17 @@ type ShowtimeSeatMapRow = {
   showtime_id: number;
   movie_id: number;
   movie_title: string;
+  starts_at: string;
+  ends_at: string;
+  base_price: string;
   hall_id: number;
   hall_name: string;
+  hall_capacity: number;
   cinema_id: number;
   cinema_name: string;
   city: string;
   section_id: number;
   section_name: string;
-  base_price: string;
   seat_id: number;
   row_label: string;
   seat_number: string;
@@ -309,8 +312,12 @@ export async function buildSeatMapByShowtime(showtimeId: number) {
         st.id AS showtime_id,
         m.id AS movie_id,
         m.title AS movie_title,
+        st.starts_at,
+        st.ends_at,
+        st.base_price::text AS base_price,
         h.id AS hall_id,
         h.name AS hall_name,
+        h.capacity AS hall_capacity,
         c.id AS cinema_id,
         c.name AS cinema_name,
         c.city,
@@ -397,6 +404,9 @@ export async function buildSeatMapByShowtime(showtimeId: number) {
       id: first.movie_id,
       title: first.movie_title,
     },
+    startsAt: first.starts_at,
+    endsAt: first.ends_at,
+    basePrice: Number(first.base_price),
     cinema: {
       id: first.cinema_id,
       name: first.cinema_name,
@@ -405,7 +415,10 @@ export async function buildSeatMapByShowtime(showtimeId: number) {
     hall: {
       id: first.hall_id,
       name: first.hall_name,
+      capacity: first.hall_capacity,
     },
+    soldSeats: bookedTickets.rows.length,
+    remainingSeats: Math.max(first.hall_capacity - bookedTickets.rows.length, 0),
     sections: Array.from(sections.values()),
   };
 }

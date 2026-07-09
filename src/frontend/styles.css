@@ -219,6 +219,19 @@ button.danger {
   padding: 1rem;
 }
 
+.movie-details-card {
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: start;
+}
+
+.movie-details-copy {
+  display: grid;
+  gap: 0.6rem;
+}
+
 .movie-card__poster,
 .manager-movie-poster,
 .ticket-image {
@@ -245,6 +258,16 @@ button.danger {
   margin-bottom: 0.8rem;
   padding: 1rem;
   text-align: center;
+}
+
+.screen-label {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(208, 140, 24, 0.16), rgba(11, 114, 133, 0.1));
+  color: var(--ink);
+  font-weight: 700;
 }
 
 .list {
@@ -356,6 +379,10 @@ button.danger {
   .layout,
   .login-grid,
   .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .movie-details-card {
     grid-template-columns: 1fr;
   }
 

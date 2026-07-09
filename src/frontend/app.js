@@ -8,8 +8,12 @@ const MESSAGES = {
   unauthorized: "برای مشاهده این بخش ابتدا وارد شوید.",
   wrongRole: "شما اجازه دسترسی به این بخش را ندارید.",
   loading: "در حال بارگذاری...",
-  emptyMovies: "هنوز فیلمی ثبت نشده است.",
+  emptyMovies: "هنوز فیلمی برای نمایش وجود ندارد.",
   emptyShowtimes: "هنوز سانسی ساخته نشده است.",
+  seatLockSuccess: "صندلی‌ها با موفقیت قفل شدند.",
+  seatLockFailure: "این صندلی قبلاً انتخاب یا قفل شده است.",
+  paymentFailure: "پرداخت ناموفق بود و صندلی‌ها آزاد شدند.",
+  reservationExpired: "زمان رزرو تمام شد. لطفاً دوباره صندلی انتخاب کنید.",
 };
 
 const ROLE_LABELS = {
@@ -29,7 +33,8 @@ const DEMO_USERS = {
 const ROLE_NAV = {
   CUSTOMER: [
     { label: "فیلم‌ها", target: "moviesSection" },
-    { label: "انتخاب سانس", target: "showtimesSection" },
+    { label: "جزئیات فیلم", target: "showtimesSection" },
+    { label: "انتخاب صندلی", target: "seatSection" },
     { label: "بلیت‌های من", target: "ticketsSection" },
   ],
   CINEMA_MANAGER: [
@@ -54,11 +59,14 @@ const state = {
   token: "",
   user: null,
   movies: [],
+  cinemas: [],
   selectedMovie: null,
   selectedShowtime: null,
-  selectedSeat: null,
+  selectedSeats: [],
+  currentSeatMap: null,
   currentReservation: null,
   currentPayment: null,
+  finalTickets: [],
   countdownTimerId: null,
   managerMovies: [],
   managerCinemas: [],
@@ -68,15 +76,23 @@ const state = {
 };
 
 const $ = (id) => document.getElementById(id);
+
 const authActions = $("authActions");
 const roleNav = $("roleNav");
 const authStatus = $("authStatus");
 const movieDetails = $("movieDetails");
+const movieDetailsPoster = $("movieDetailsPoster");
+const movieDetailsTitle = $("movieDetailsTitle");
+const movieDetailsMeta = $("movieDetailsMeta");
+const movieDetailsDescription = $("movieDetailsDescription");
 const showtimesList = $("showtimesList");
 const seatMap = $("seatMap");
+const seatShowtimeSummary = $("seatShowtimeSummary");
 const selectedSeatSummary = $("selectedSeatSummary");
+const checkoutSummary = $("checkoutSummary");
 const reservationDetails = $("reservationDetails");
 const paymentDetails = $("paymentDetails");
+const finalTicketDetails = $("finalTicketDetails");
 const ticketsList = $("ticketsList");
 const notificationsList = $("notificationsList");
 const managerDashboard = $("managerDashboard");
@@ -127,7 +143,9 @@ async function api(path, options = {}) {
     "Content-Type": "application/json",
     ...(options.headers || {}),
   };
-  if (state.token) headers.Authorization = `Bearer ${state.token}`;
+  if (state.token) {
+    headers.Authorization = `Bearer ${state.token}`;
+  }
 
   const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
   const text = await response.text();
@@ -142,12 +160,6 @@ async function api(path, options = {}) {
 
 function toPersianDate(dateValue) {
   return new Date(dateValue).toLocaleString("fa-AF");
-}
-
-function toDateTimeLocal(dateValue) {
-  const date = new Date(dateValue);
-  const timezoneOffset = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() - timezoneOffset).toISOString().slice(0, 16);
 }
 
 function posterMarkup(title, posterUrl, imageClass = "movie-card__poster") {
@@ -179,12 +191,16 @@ function clearSession() {
 }
 
 function requireLoggedIn() {
-  if (!state.user || !state.token) throw new Error(MESSAGES.unauthorized);
+  if (!state.user || !state.token) {
+    throw new Error(MESSAGES.unauthorized);
+  }
 }
 
 function requireRole(...roles) {
   requireLoggedIn();
-  if (!roles.includes(state.user.role)) throw new Error(MESSAGES.wrongRole);
+  if (!roles.includes(state.user.role)) {
+    throw new Error(MESSAGES.wrongRole);
+  }
 }
 
 function updateVisibleSections() {
@@ -220,7 +236,9 @@ function renderAuthUi() {
 
 function renderRoleNav() {
   roleNav.innerHTML = "";
-  if (!state.user) return;
+  if (!state.user) {
+    return;
+  }
   ROLE_NAV[state.user.role].forEach((item) => {
     const button = document.createElement("button");
     button.className = "ghost";
@@ -243,23 +261,46 @@ function setUserSession(token, user) {
   updateVisibleSections();
 }
 
-function resetTransientState() {
-  state.selectedMovie = null;
+function clearCustomerFlow(keepMovie = false) {
+  if (!keepMovie) {
+    state.selectedMovie = null;
+    movieDetailsPoster.innerHTML = "ابتدا یک فیلم را انتخاب کنید.";
+    movieDetailsTitle.textContent = "فیلمی انتخاب نشده است.";
+    movieDetailsMeta.textContent = "ژانر، مدت زمان، زبان و رده سنی اینجا نمایش داده می‌شود.";
+    movieDetailsDescription.textContent = "پس از انتخاب فیلم، توضیحات کامل و سانس‌های در دسترس را می‌بینید.";
+    movieDetails.textContent = "ابتدا یک فیلم را انتخاب کنید.";
+    showtimesList.innerHTML = "";
+  }
+
   state.selectedShowtime = null;
-  state.selectedSeat = null;
+  state.selectedSeats = [];
+  state.currentSeatMap = null;
   state.currentReservation = null;
   state.currentPayment = null;
+  state.finalTickets = [];
+  seatShowtimeSummary.textContent = "عنوان فیلم، سینما، سالن و سانس انتخاب‌شده در اینجا نمایش داده می‌شود.";
+  seatMap.innerHTML = "";
+  selectedSeatSummary.textContent = "هنوز صندلی انتخاب نشده است.";
+  checkoutSummary.textContent = "اطلاعات فیلم، سینما، سالن، سانس، صندلی‌ها و مبلغ کل اینجا نمایش داده می‌شود.";
+  reservationDetails.textContent = "رزروی ثبت نشده است.";
+  paymentDetails.textContent = "هنوز پرداختی ایجاد نشده است.";
+  finalTicketDetails.innerHTML = `<div class="item">پس از پرداخت موفق، بلیت نهایی شما در اینجا نمایش داده می‌شود.</div>`;
+  countdownTimer.textContent = "زمان باقی‌مانده رزرو: -";
+  if (state.countdownTimerId) {
+    clearInterval(state.countdownTimerId);
+    state.countdownTimerId = null;
+  }
+}
+
+function resetTransientState() {
+  clearCustomerFlow();
+  state.movies = [];
+  state.cinemas = [];
   state.managerMovies = [];
   state.managerCinemas = [];
   state.managerHallsByCinema = {};
   state.managerShowtimes = [];
   state.managerSalesReport = null;
-  movieDetails.textContent = "ابتدا یک فیلم را انتخاب کنید.";
-  showtimesList.innerHTML = "";
-  seatMap.innerHTML = "";
-  selectedSeatSummary.textContent = "هنوز صندلی انتخاب نشده است.";
-  reservationDetails.textContent = "رزروی ثبت نشده است.";
-  paymentDetails.textContent = "هنوز پرداختی ایجاد نشده است.";
   ticketsList.innerHTML = "";
   notificationsList.innerHTML = "";
   managerDashboard.textContent = "آمار پنل مدیر هنوز بارگذاری نشده است.";
@@ -277,11 +318,6 @@ function resetTransientState() {
   staffValidationResult.textContent = "نتیجه اعتبارسنجی اینجا نمایش داده می‌شود.";
   adminSummary.textContent = "اطلاعات مدیریتی هنوز بارگذاری نشده است.";
   resetStatus.textContent = "داده‌های نمایشی هنوز بازنشانی نشده‌اند.";
-  countdownTimer.textContent = "زمان باقی‌مانده رزرو: -";
-  if (state.countdownTimerId) {
-    clearInterval(state.countdownTimerId);
-    state.countdownTimerId = null;
-  }
 }
 
 function logout() {
@@ -305,9 +341,14 @@ function renderMetricCards(container, items) {
   });
 }
 
-function renderMovies(movies) {
+function renderMovieList(movies) {
   const container = $("moviesList");
   container.innerHTML = "";
+  if (!movies.length) {
+    container.innerHTML = `<div class="item">${MESSAGES.emptyMovies}</div>`;
+    return;
+  }
+
   movies.forEach((movie) => {
     const card = document.createElement("div");
     card.className = "movie-card";
@@ -315,7 +356,8 @@ function renderMovies(movies) {
       ${posterMarkup(movie.title, movie.posterUrl)}
       <h3>${movie.title}</h3>
       <p>${movie.genre} • ${movie.durationMinutes} دقیقه</p>
-      <p>${movie.description || ""}</p>
+      <p>${movie.language} • ${movie.ageRating}</p>
+      <p>${movie.description || "توضیحی برای این فیلم ثبت نشده است."}</p>
     `;
     const button = document.createElement("button");
     button.textContent = "مشاهده سانس‌ها";
@@ -325,16 +367,31 @@ function renderMovies(movies) {
   });
 }
 
-function renderShowtimes(showtimes) {
+function renderMovieDetails(movie) {
+  movieDetailsPoster.innerHTML = posterMarkup(movie.title, movie.posterUrl, "movie-card__poster");
+  movieDetailsTitle.textContent = movie.title;
+  movieDetailsMeta.textContent = `${movie.genre} • ${movie.durationMinutes} دقیقه • ${movie.language} • ${movie.ageRating}`;
+  movieDetailsDescription.textContent = movie.description || "توضیحی برای این فیلم ثبت نشده است.";
+  movieDetails.textContent = pretty(movie);
+}
+
+function renderShowtimeCards(showtimes) {
   showtimesList.innerHTML = "";
+  if (!showtimes.length) {
+    showtimesList.innerHTML = `<div class="item">${MESSAGES.emptyShowtimes}</div>`;
+    return;
+  }
+
   showtimes.forEach((showtime) => {
     const item = document.createElement("div");
     item.className = "item";
     item.innerHTML = `
-      <strong>${showtime.cinema.name} - ${showtime.hall.name}</strong>
+      <strong>${showtime.cinema.name}</strong>
       <div>شهر: ${showtime.cinema.city}</div>
-      <div>زمان: ${toPersianDate(showtime.startsAt)}</div>
-      <div>قیمت: ${showtime.price} افغانی</div>
+      <div>سالن: ${showtime.hall.name}</div>
+      <div>تاریخ و ساعت: ${toPersianDate(showtime.startsAt)}</div>
+      <div>قیمت بلیت: ${showtime.price} افغانی</div>
+      <div>صندلی باقی‌مانده: ${showtime.remainingSeats}</div>
     `;
     const button = document.createElement("button");
     button.textContent = "انتخاب صندلی";
@@ -344,30 +401,36 @@ function renderShowtimes(showtimes) {
   });
 }
 
+function formatSelectedSeats() {
+  if (!state.selectedSeats.length) {
+    return "هنوز صندلی انتخاب نشده است.";
+  }
+  const labels = state.selectedSeats.map((seat) => `${seat.rowLabel}${seat.seatNumber}`);
+  const total = state.selectedSeats.reduce((sum, seat) => sum + Number(seat.price), 0);
+  return `صندلی‌های انتخاب‌شده: ${labels.join("، ")} | تعداد: ${state.selectedSeats.length} | مبلغ کل: ${total} افغانی`;
+}
+
 function renderSeatMap(data) {
+  state.currentSeatMap = data;
   seatMap.innerHTML = "";
-  state.selectedSeat = null;
-  selectedSeatSummary.textContent = "هنوز صندلی انتخاب نشده است.";
+  const selectedIds = new Set(state.selectedSeats.map((seat) => seat.seatId));
+  selectedSeatSummary.textContent = formatSelectedSeats();
+
   data.sections.forEach((section) => {
     const block = document.createElement("div");
     block.className = "section-block";
-    const title = document.createElement("h3");
-    title.textContent = `${section.sectionName} - ${section.basePrice} افغانی`;
-    block.appendChild(title);
-
+    block.innerHTML = `<h3>${section.sectionName} - ${section.basePrice} افغانی</h3>`;
     const grid = document.createElement("div");
     grid.className = "seat-grid";
+
     section.seats.forEach((seat) => {
       const button = document.createElement("button");
-      button.className = `seat ${seat.state}`;
+      const isSelected = selectedIds.has(seat.seatId);
+      const stateClass = isSelected ? "selected" : seat.state;
+      button.className = `seat ${stateClass}`;
       button.textContent = `${seat.rowLabel}${seat.seatNumber}`;
-      button.disabled = seat.state !== "available";
-      button.addEventListener("click", () => {
-        document.querySelectorAll(".seat.selected").forEach((node) => node.classList.remove("selected"));
-        button.classList.add("selected");
-        state.selectedSeat = { ...seat, sectionName: section.sectionName, price: section.basePrice };
-        selectedSeatSummary.textContent = `صندلی ${seat.rowLabel}${seat.seatNumber} در بخش ${section.sectionName} انتخاب شد.`;
-      });
+      button.disabled = seat.state !== "available" && !isSelected;
+      button.addEventListener("click", () => toggleSeatSelection(seat, section));
       grid.appendChild(button);
     });
 
@@ -376,21 +439,112 @@ function renderSeatMap(data) {
   });
 }
 
+function toggleSeatSelection(seat, section) {
+  const exists = state.selectedSeats.some((item) => item.seatId === seat.seatId);
+  if (exists) {
+    state.selectedSeats = state.selectedSeats.filter((item) => item.seatId !== seat.seatId);
+  } else {
+    state.selectedSeats = [...state.selectedSeats, {
+      seatId: seat.seatId,
+      rowLabel: seat.rowLabel,
+      seatNumber: seat.seatNumber,
+      sectionName: section.sectionName,
+      price: section.basePrice,
+    }];
+  }
+  renderSeatMap(state.currentSeatMap);
+}
+
+function renderSeatShowtimeSummary() {
+  if (!state.selectedShowtime) {
+    seatShowtimeSummary.textContent = "عنوان فیلم، سینما، سالن و سانس انتخاب‌شده در اینجا نمایش داده می‌شود.";
+    return;
+  }
+
+  seatShowtimeSummary.innerHTML = `
+    <strong>${state.selectedShowtime.movieTitle}</strong>
+    <div>سینما: ${state.selectedShowtime.cinema.name}</div>
+    <div>سالن: ${state.selectedShowtime.hall.name}</div>
+    <div>سانس: ${toPersianDate(state.selectedShowtime.startsAt)}</div>
+    <div>صندلی باقی‌مانده: ${state.selectedShowtime.remainingSeats}</div>
+  `;
+}
+
+function renderCheckoutSummary() {
+  if (!state.currentReservation || !state.selectedShowtime) {
+    checkoutSummary.textContent = "اطلاعات فیلم، سینما، سالن، سانس، صندلی‌ها و مبلغ کل اینجا نمایش داده می‌شود.";
+    return;
+  }
+
+  const seatsLabel = state.currentReservation.seats.map((seat) => `${seat.rowLabel}${seat.seatNumber}`).join("، ");
+  checkoutSummary.innerHTML = `
+    <strong>${state.selectedShowtime.movieTitle}</strong>
+    <div>سینما: ${state.selectedShowtime.cinema.name}</div>
+    <div>سالن: ${state.selectedShowtime.hall.name}</div>
+    <div>سانس: ${toPersianDate(state.selectedShowtime.startsAt)}</div>
+    <div>صندلی: ${seatsLabel}</div>
+    <div>مبلغ کل: ${state.currentReservation.totalAmount} افغانی</div>
+    <div>انقضای رزرو: ${toPersianDate(state.currentReservation.lockedUntil)}</div>
+  `;
+}
+
+async function renderFinalTickets(tickets) {
+  finalTicketDetails.innerHTML = "";
+  for (const ticket of tickets) {
+    const detail = ticket.id ? await api(`/api/tickets/${ticket.id}`) : ticket;
+    const item = document.createElement("div");
+    item.className = "item";
+    item.innerHTML = `
+      <strong>بلیت شما با موفقیت صادر شد</strong>
+      <div>کد بلیت: ${detail.ticketNumber}</div>
+      <div>فیلم: ${detail.movieTitle}</div>
+      <div>سینما: ${detail.cinemaName}</div>
+      <div>سالن: ${detail.hallName}</div>
+      <div>صندلی: ${detail.seat.rowLabel}${detail.seat.seatNumber}</div>
+      <div>سانس: ${toPersianDate(detail.showtime)}</div>
+      <div>وضعیت بلیت: ${detail.ticketStatusLabel}</div>
+      ${detail.qrCodeDataUrl ? `<img class="ticket-image" src="${detail.qrCodeDataUrl}" alt="QR" />` : ""}
+    `;
+    finalTicketDetails.appendChild(item);
+  }
+}
+
 function startCountdown(lockedUntil) {
-  if (state.countdownTimerId) clearInterval(state.countdownTimerId);
-  const update = () => {
+  if (state.countdownTimerId) {
+    clearInterval(state.countdownTimerId);
+  }
+
+  const update = async () => {
     const diff = new Date(lockedUntil).getTime() - Date.now();
     if (diff <= 0) {
-      countdownTimer.textContent = "زمان رزرو به پایان رسیده است.";
       clearInterval(state.countdownTimerId);
       state.countdownTimerId = null;
+      countdownTimer.textContent = MESSAGES.reservationExpired;
+      try {
+        if (state.currentReservation) {
+          await api(`/api/reservations/${state.currentReservation.reservationId}/release-expired`, { method: "POST" });
+        }
+      } catch (_error) {
+        // best effort
+      }
+      state.currentReservation = null;
+      state.currentPayment = null;
+      state.selectedSeats = [];
+      paymentDetails.textContent = MESSAGES.reservationExpired;
+      reservationDetails.textContent = MESSAGES.reservationExpired;
+      renderCheckoutSummary();
+      if (state.selectedShowtime) {
+        await loadSeatMap();
+      }
       return;
     }
+
     const totalSeconds = Math.floor(diff / 1000);
     const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
     const seconds = String(totalSeconds % 60).padStart(2, "0");
     countdownTimer.textContent = `زمان باقی‌مانده رزرو: ${minutes}:${seconds}`;
   };
+
   update();
   state.countdownTimerId = setInterval(update, 1000);
 }
@@ -460,10 +614,24 @@ async function restoreSession() {
   }
 }
 
+async function loadCinemas() {
+  state.cinemas = await api("/api/cinemas");
+  const cinemaFilter = $("cinemaFilter");
+  cinemaFilter.innerHTML = `<option value="">همه سینماها</option>`;
+  state.cinemas.forEach((cinema) => {
+    const option = document.createElement("option");
+    option.value = cinema.id;
+    option.textContent = cinema.name;
+    cinemaFilter.appendChild(option);
+  });
+}
+
 async function bootstrapRoleData() {
-  if (!state.user) return;
+  if (!state.user) {
+    return;
+  }
   if (state.user.role === "CUSTOMER") {
-    await loadMovies();
+    await Promise.all([loadCinemas(), loadMovies()]);
     return;
   }
   if (["CINEMA_MANAGER", "ADMIN"].includes(state.user.role)) {
@@ -474,68 +642,113 @@ async function bootstrapRoleData() {
 async function loadMovies() {
   requireRole("CUSTOMER");
   const params = new URLSearchParams();
-  const q = $("searchInput").value;
+  const q = $("searchInput").value.trim();
   const city = $("cityFilter").value;
+  const cinemaId = $("cinemaFilter").value;
   const genre = $("genreFilter").value;
+  const date = $("dateFilter").value;
   if (q) params.set("q", q);
   if (city) params.set("city", city);
+  if (cinemaId) params.set("cinemaId", cinemaId);
   if (genre) params.set("genre", genre);
+  if (date) params.set("date", date);
   state.movies = await api(`/api/movies${params.toString() ? `?${params.toString()}` : ""}`);
-  renderMovies(state.movies);
+  renderMovieList(state.movies);
 }
 
 async function selectMovie(movieId) {
   requireRole("CUSTOMER");
+  clearCustomerFlow(true);
   const movie = await api(`/api/movies/${movieId}`);
   const showtimes = await api(`/api/movies/${movieId}/showtimes`);
   state.selectedMovie = movie;
-  movieDetails.textContent = pretty(movie);
-  renderShowtimes(showtimes);
+  renderMovieDetails(movie);
+  renderShowtimeCards(showtimes);
+  scrollToSection("showtimesSection");
 }
 
 function selectShowtime(showtime) {
   requireRole("CUSTOMER");
   state.selectedShowtime = showtime;
+  state.selectedSeats = [];
+  state.currentReservation = null;
+  state.currentPayment = null;
+  renderSeatShowtimeSummary();
+  renderCheckoutSummary();
   movieDetails.textContent = `${pretty(state.selectedMovie)}\n\nسانس انتخاب‌شده:\n${pretty(showtime)}`;
+  scrollToSection("seatSection");
 }
 
 async function loadSeatMap() {
   requireRole("CUSTOMER");
-  if (!state.selectedShowtime) throw new Error("ابتدا یک سانس را انتخاب کنید.");
+  if (!state.selectedShowtime) {
+    throw new Error("ابتدا یک سانس را انتخاب کنید.");
+  }
   const data = await api(`/api/showtimes/${state.selectedShowtime.id}/seat-map`);
+  renderSeatShowtimeSummary();
   renderSeatMap(data);
 }
 
 async function lockSeat() {
   requireRole("CUSTOMER");
-  if (!state.selectedShowtime || !state.selectedSeat) {
-    throw new Error("ابتدا سانس را انتخاب کنید و یک صندلی برگزینید.");
+  if (!state.selectedShowtime || !state.selectedSeats.length) {
+    throw new Error("ابتدا یک یا چند صندلی را انتخاب کنید.");
   }
-  const reservation = await api("/api/reservations/lock-seat", {
-    method: "POST",
-    body: JSON.stringify({
-      showtimeId: state.selectedShowtime.id,
-      userId: state.user.id,
-      seatIds: [state.selectedSeat.seatId],
-    }),
-  });
-  state.currentReservation = reservation;
-  reservationDetails.textContent = pretty(reservation);
-  startCountdown(reservation.lockedUntil);
-  await loadSeatMap();
+  try {
+    const reservation = await api("/api/reservations/lock-seat", {
+      method: "POST",
+      body: JSON.stringify({
+        showtimeId: state.selectedShowtime.id,
+        userId: state.user.id,
+        seatIds: state.selectedSeats.map((seat) => seat.seatId),
+      }),
+    });
+    state.currentReservation = reservation;
+    reservationDetails.textContent = `${MESSAGES.seatLockSuccess}\n\n${pretty(reservation)}`;
+    renderCheckoutSummary();
+    startCountdown(reservation.lockedUntil || new Date(Date.now() + 10 * 60 * 1000).toISOString());
+    await loadSeatMap();
+  } catch (error) {
+    throw new Error(error.message || MESSAGES.seatLockFailure);
+  }
 }
 
 async function reloadReservation() {
   requireRole("CUSTOMER");
-  if (!state.currentReservation) throw new Error("رزروی برای بارگذاری وجود ندارد.");
+  if (!state.currentReservation) {
+    throw new Error("رزروی برای بارگذاری وجود ندارد.");
+  }
   const reservation = await api(`/api/reservations/${state.currentReservation.reservationId}`);
   state.currentReservation = reservation;
   reservationDetails.textContent = pretty(reservation);
+  renderCheckoutSummary();
+}
+
+async function cancelCustomerReservation() {
+  requireRole("CUSTOMER");
+  if (!state.currentReservation) {
+    throw new Error("رزروی برای لغو وجود ندارد.");
+  }
+  const response = await api(`/api/reservations/${state.currentReservation.reservationId}/cancel`, { method: "POST" });
+  reservationDetails.textContent = response.message;
+  paymentDetails.textContent = response.message;
+  state.currentReservation = null;
+  state.currentPayment = null;
+  state.selectedSeats = [];
+  if (state.countdownTimerId) {
+    clearInterval(state.countdownTimerId);
+    state.countdownTimerId = null;
+  }
+  countdownTimer.textContent = "زمان باقی‌مانده رزرو: -";
+  renderCheckoutSummary();
+  await loadSeatMap();
 }
 
 async function createCheckout() {
   requireRole("CUSTOMER");
-  if (!state.currentReservation) throw new Error("ابتدا صندلی را رزرو کنید.");
+  if (!state.currentReservation) {
+    throw new Error("ابتدا صندلی‌ها را رزرو کنید.");
+  }
   const payment = await api("/api/checkout", {
     method: "POST",
     body: JSON.stringify({ reservationId: state.currentReservation.reservationId, paymentProvider: "mock-gateway" }),
@@ -546,34 +759,62 @@ async function createCheckout() {
 
 async function completePayment(success) {
   requireRole("CUSTOMER");
-  if (!state.currentPayment) throw new Error("ابتدا پرداخت را ایجاد کنید.");
+  if (!state.currentPayment) {
+    throw new Error("ابتدا پرداخت را ایجاد کنید.");
+  }
   const endpoint = success
     ? `/api/payments/mock-success/${state.currentPayment.paymentId}`
     : `/api/payments/mock-fail/${state.currentPayment.paymentId}`;
   const response = await api(endpoint, { method: "POST" });
-  paymentDetails.textContent = pretty(response);
-  if (success) {
-    await loadTickets();
-    await loadNotifications();
+
+  if (!success) {
+    state.currentPayment = null;
+    state.currentReservation = null;
+    state.selectedSeats = [];
+    paymentDetails.textContent = MESSAGES.paymentFailure;
+    if (state.countdownTimerId) {
+      clearInterval(state.countdownTimerId);
+      state.countdownTimerId = null;
+    }
+    countdownTimer.textContent = "زمان باقی‌مانده رزرو: -";
+    await loadSeatMap();
+    throw new Error(MESSAGES.paymentFailure);
   }
+
+  paymentDetails.textContent = pretty(response);
+  state.finalTickets = response.tickets || [];
+  if (state.countdownTimerId) {
+    clearInterval(state.countdownTimerId);
+    state.countdownTimerId = null;
+  }
+  countdownTimer.textContent = "رزرو شما با پرداخت موفق نهایی شد.";
+  await renderFinalTickets(state.finalTickets);
+  await loadTickets();
+  await loadNotifications();
   await loadSeatMap();
+  scrollToSection("finalTicketSection");
 }
 
 async function loadTickets() {
   requireRole("CUSTOMER");
   const tickets = await api(`/api/tickets/my/${state.user.id}`);
   ticketsList.innerHTML = "";
+  if (!tickets.length) {
+    ticketsList.innerHTML = `<div class="item">هنوز بلیتی برای این حساب ثبت نشده است.</div>`;
+    return;
+  }
   tickets.forEach((ticket) => {
     const item = document.createElement("div");
     item.className = "item";
     item.innerHTML = `
-      <strong>${ticket.movieTitle}</strong>
-      <div>${ticket.cinemaName} - ${ticket.hallName}</div>
-      <div>سانس: ${toPersianDate(ticket.showtime)}</div>
+      <strong>کد بلیت: ${ticket.ticketNumber}</strong>
+      <div>فیلم: ${ticket.movieTitle}</div>
+      <div>سینما: ${ticket.cinemaName}</div>
+      <div>سالن: ${ticket.hallName}</div>
       <div>صندلی: ${ticket.seat.rowLabel}${ticket.seat.seatNumber}</div>
-      <span class="badge success">${ticket.ticketStatusLabel}</span>
-      <div>کد بلیت: ${ticket.ticketNumber}</div>
-      <img class="ticket-image" src="${ticket.qrCodeDataUrl}" alt="QR" />
+      <div>سانس: ${toPersianDate(ticket.showtime)}</div>
+      <div>وضعیت بلیت: ${ticket.ticketStatusLabel}</div>
+      ${ticket.qrCodeDataUrl ? `<img class="ticket-image" src="${ticket.qrCodeDataUrl}" alt="QR" />` : ""}
     `;
     ticketsList.appendChild(item);
   });
@@ -597,12 +838,12 @@ async function loadNotifications() {
 
 function populateSelect(selectId, items, placeholder, mapFn) {
   const select = $(selectId);
+  if (!select) {
+    return;
+  }
   select.innerHTML = "";
   if (!items.length) {
-    const option = document.createElement("option");
-    option.value = "";
-    option.textContent = placeholder;
-    select.appendChild(option);
+    select.innerHTML = `<option value="">${placeholder}</option>`;
     return;
   }
   items.forEach((item, index) => {
@@ -610,7 +851,9 @@ function populateSelect(selectId, items, placeholder, mapFn) {
     const mapped = mapFn(item);
     option.value = mapped.value;
     option.textContent = mapped.label;
-    if (index === 0) option.selected = true;
+    if (index === 0) {
+      option.selected = true;
+    }
     select.appendChild(option);
   });
 }
@@ -638,7 +881,7 @@ function calculateHallCapacity() {
 function renderManagerMovies() {
   managerMoviesList.innerHTML = "";
   if (!state.managerMovies.length) {
-    managerMoviesList.innerHTML = `<div class="item">${MESSAGES.emptyMovies}</div>`;
+    managerMoviesList.innerHTML = `<div class="item">هنوز فیلمی ثبت نشده است.</div>`;
     return;
   }
   state.managerMovies.forEach((movie) => {
@@ -806,7 +1049,9 @@ async function loadManagerCinemas() {
 }
 
 async function loadHallsForCinema(cinemaId) {
-  if (!cinemaId) return [];
+  if (!cinemaId) {
+    return [];
+  }
   const halls = await api(`/api/manager/cinemas/${cinemaId}/halls`);
   state.managerHallsByCinema[String(cinemaId)] = halls;
   renderManagerHalls();
@@ -859,7 +1104,6 @@ async function saveMovie() {
     posterUrl: $("moviePosterInput").value.trim(),
     status: $("movieStatusInput").value,
   };
-
   const movieId = $("movieEditIdInput").value;
   const path = movieId ? `/api/manager/movies/${movieId}` : "/api/manager/movies";
   const method = movieId ? "PUT" : "POST";
@@ -867,7 +1111,6 @@ async function saveMovie() {
   managerMovieStatus.textContent = result.message || "فیلم با موفقیت ثبت شد.";
   resetMovieForm();
   await loadManagerMovies();
-  await loadMoviesForCustomerIfVisible();
 }
 
 async function saveCinema() {
@@ -929,13 +1172,6 @@ async function saveShowtime() {
   await loadManagerShowtimes();
   await loadManagerDashboard();
   await loadSalesReport();
-  await loadMoviesForCustomerIfVisible();
-}
-
-async function loadMoviesForCustomerIfVisible() {
-  if (state.user?.role === "CUSTOMER") {
-    await loadMovies();
-  }
 }
 
 async function validateTicket() {
@@ -960,7 +1196,9 @@ async function resetDemo() {
 
 function bind(id, handler) {
   const node = $(id);
-  if (!node) return;
+  if (!node) {
+    return;
+  }
   node.addEventListener("click", async () => {
     try {
       await handler();
@@ -976,7 +1214,9 @@ bind("loadMoviesButton", loadMovies);
 bind("applyFiltersButton", loadMovies);
 bind("refreshMovieButton", async () => {
   requireRole("CUSTOMER");
-  if (!state.selectedMovie) throw new Error("فیلمی انتخاب نشده است.");
+  if (!state.selectedMovie) {
+    throw new Error("فیلمی انتخاب نشده است.");
+  }
   await selectMovie(state.selectedMovie.id);
 });
 bind("loadSeatMapButton", loadSeatMap);
@@ -985,6 +1225,11 @@ bind("reloadReservationButton", reloadReservation);
 bind("checkoutButton", createCheckout);
 bind("paymentSuccessButton", async () => completePayment(true));
 bind("paymentFailButton", async () => completePayment(false));
+bind("cancelReservationButton", cancelCustomerReservation);
+bind("viewMyTicketsButton", async () => {
+  await loadTickets();
+  scrollToSection("ticketsSection");
+});
 bind("loadTicketsButton", loadTickets);
 bind("loadNotificationsButton", loadNotifications);
 bind("saveMovieButton", saveMovie);
@@ -1009,7 +1254,7 @@ document.querySelectorAll("[data-demo-role]").forEach((button) => {
     try {
       await login(demoUser);
     } catch (_error) {
-      // login handles the message
+      // login already shows the message
     }
   });
 });
@@ -1019,24 +1264,31 @@ document.querySelectorAll("[data-nav-target]").forEach((button) => {
 });
 
 ["hallRowsInput", "hallSeatsPerRowInput"].forEach((id) => {
-  $(id).addEventListener("input", calculateHallCapacity);
-});
-
-$("hallCinemaSelect").addEventListener("change", async () => {
-  try {
-    await loadHallsForCinema($("hallCinemaSelect").value);
-  } catch (error) {
-    window.alert(error.message);
+  const node = $(id);
+  if (node) {
+    node.addEventListener("input", calculateHallCapacity);
   }
 });
 
-$("showtimeCinemaSelect").addEventListener("change", async () => {
-  try {
-    await syncShowtimeHallOptions();
-  } catch (error) {
-    window.alert(error.message);
-  }
-});
+if ($("hallCinemaSelect")) {
+  $("hallCinemaSelect").addEventListener("change", async () => {
+    try {
+      await loadHallsForCinema($("hallCinemaSelect").value);
+    } catch (error) {
+      window.alert(error.message);
+    }
+  });
+}
+
+if ($("showtimeCinemaSelect")) {
+  $("showtimeCinemaSelect").addEventListener("change", async () => {
+    try {
+      await syncShowtimeHallOptions();
+    } catch (error) {
+      window.alert(error.message);
+    }
+  });
+}
 
 renderAuthUi();
 renderRoleNav();

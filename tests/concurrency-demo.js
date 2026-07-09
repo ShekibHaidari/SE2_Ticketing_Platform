@@ -58,13 +58,14 @@ async function main() {
   const failureCount = results.length - successCount;
 
   console.table(results);
-  console.log(`قفل‌های موفق: ${successCount}`);
-  console.log(`قفل‌های ناموفق: ${failureCount}`);
+  console.log(`total attempts: ${results.length}`);
+  console.log(`successful locks: ${successCount}`);
+  console.log(`rejected locks: ${failureCount}`);
 
   if (successCount === 1) {
-    console.log("نتیجه صحیح است: فقط یک درخواست موفق شد.");
+    console.log("expected result: exactly 1 successful lock");
   } else {
-    console.log("هشدار: انتظار می‌رفت فقط یک قفل موفق ثبت شود.");
+    console.log("هشدار: نتیجه مورد انتظار به‌دست نیامد.");
   }
 }
 

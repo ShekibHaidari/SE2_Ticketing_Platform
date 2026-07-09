@@ -129,7 +129,7 @@
       <section class="layout" id="customerFlow" data-role-scope="CUSTOMER">
         <section class="card" id="moviesSection">
           <div class="section-head">
-            <h2>فیلم‌ها</h2>
+            <h2>صفحه فیلم‌ها</h2>
             <button id="loadMoviesButton">بارگذاری فیلم‌ها</button>
           </div>
           <div class="filters">
@@ -139,6 +139,9 @@
               <option value="کابل">کابل</option>
               <option value="هرات">هرات</option>
             </select>
+            <select id="cinemaFilter">
+              <option value="">همه سینماها</option>
+            </select>
             <select id="genreFilter">
               <option value="">همه ژانرها</option>
               <option value="درام">درام</option>
@@ -146,6 +149,7 @@
               <option value="کمدی">کمدی</option>
               <option value="خانوادگی">خانوادگی</option>
             </select>
+            <input id="dateFilter" type="date" />
             <button id="applyFiltersButton" class="secondary">اعمال فیلتر</button>
           </div>
           <div id="moviesList" class="cards-grid"></div>
@@ -153,8 +157,16 @@
 
         <section class="card" id="showtimesSection">
           <div class="section-head">
-            <h2>جزئیات فیلم و سانس‌ها</h2>
+            <h2>جزئیات فیلم</h2>
             <button id="refreshMovieButton" class="secondary">تازه‌سازی</button>
+          </div>
+          <div id="movieDetailsPanel" class="movie-details-card">
+            <div id="movieDetailsPoster" class="movie-poster-placeholder">ابتدا یک فیلم را انتخاب کنید.</div>
+            <div class="movie-details-copy">
+              <h3 id="movieDetailsTitle">فیلمی انتخاب نشده است.</h3>
+              <p id="movieDetailsMeta" class="note">ژانر، مدت زمان، زبان و رده سنی اینجا نمایش داده می‌شود.</p>
+              <p id="movieDetailsDescription">پس از انتخاب فیلم، توضیحات کامل و سانس‌های در دسترس را می‌بینید.</p>
+            </div>
           </div>
           <pre id="movieDetails" class="status-box">ابتدا یک فیلم را انتخاب کنید.</pre>
           <div id="showtimesList" class="list"></div>
@@ -167,6 +179,8 @@
             <h2>انتخاب صندلی</h2>
             <button id="loadSeatMapButton">نمایش نقشه صندلی</button>
           </div>
+          <div id="seatShowtimeSummary" class="item">عنوان فیلم، سینما، سالن و سانس انتخاب‌شده در اینجا نمایش داده می‌شود.</div>
+          <div class="screen-label">پرده سینما</div>
           <div class="legend">
             <span><i class="dot available"></i> آزاد</span>
             <span><i class="dot selected"></i> انتخاب‌شده</span>
@@ -184,17 +198,29 @@
             <h2>پرداخت</h2>
             <button id="reloadReservationButton" class="secondary">بارگذاری دوباره رزرو</button>
           </div>
+          <div id="checkoutSummary" class="item">اطلاعات فیلم، سینما، سالن، سانس، صندلی‌ها و مبلغ کل اینجا نمایش داده می‌شود.</div>
           <pre id="reservationDetails" class="status-box">رزروی ثبت نشده است.</pre>
           <div class="actions">
-            <button id="checkoutButton">رفتن به پرداخت</button>
+            <button id="checkoutButton">ادامه پرداخت</button>
             <button id="paymentSuccessButton" class="secondary">پرداخت موفق آزمایشی</button>
             <button id="paymentFailButton" class="danger">پرداخت ناموفق آزمایشی</button>
+            <button id="cancelReservationButton" class="ghost">لغو رزرو</button>
           </div>
           <pre id="paymentDetails" class="status-box">هنوز پرداختی ایجاد نشده است.</pre>
         </section>
       </section>
 
       <section class="layout" data-role-scope="CUSTOMER">
+        <section class="card" id="finalTicketSection">
+          <div class="section-head">
+            <h2>بلیت نهایی</h2>
+            <button id="viewMyTicketsButton" class="secondary">مشاهده بلیت‌های من</button>
+          </div>
+          <div id="finalTicketDetails" class="list">
+            <div class="item">پس از پرداخت موفق، بلیت نهایی شما در اینجا نمایش داده می‌شود.</div>
+          </div>
+        </section>
+
         <section class="card" id="ticketsSection">
           <div class="section-head">
             <h2>بلیت‌های من</h2>

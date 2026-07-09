@@ -22,6 +22,8 @@ type ShowtimeRow = {
   hall_id: number;
   hall_name: string;
   hall_capacity: number;
+  sold_seats: number;
+  remaining_seats: number;
 };
 
 router.get("/", asyncHandler(async (req, res) => {
@@ -65,12 +67,30 @@ router.get("/", asyncHandler(async (req, res) => {
         c.city,
         h.id AS hall_id,
         h.name AS hall_name,
-        h.capacity AS hall_capacity
+        h.capacity AS hall_capacity,
+        COUNT(t.id)::int AS sold_seats,
+        GREATEST(h.capacity - COUNT(t.id), 0)::int AS remaining_seats
       FROM showtimes st
       JOIN movies m ON m.id = st.movie_id
       JOIN halls h ON h.id = st.hall_id
       JOIN cinemas c ON c.id = h.cinema_id
+      LEFT JOIN tickets t ON t.showtime_id = st.id AND t.ticket_status IN ('active', 'used')
       WHERE ${conditions.join(" AND ")}
+      GROUP BY
+        st.id,
+        st.movie_id,
+        m.title,
+        m.genre,
+        m.duration_minutes,
+        st.starts_at,
+        st.ends_at,
+        st.base_price,
+        c.id,
+        c.name,
+        c.city,
+        h.id,
+        h.name,
+        h.capacity
       ORDER BY st.starts_at ASC
     `,
     params,
@@ -95,6 +115,8 @@ router.get("/", asyncHandler(async (req, res) => {
       name: row.hall_name,
       capacity: row.hall_capacity,
     },
+    soldSeats: row.sold_seats,
+    remainingSeats: row.remaining_seats,
   })));
 }));
 
@@ -116,12 +138,30 @@ router.get("/:showtimeId", asyncHandler(async (req, res) => {
         c.city,
         h.id AS hall_id,
         h.name AS hall_name,
-        h.capacity AS hall_capacity
+        h.capacity AS hall_capacity,
+        COUNT(t.id)::int AS sold_seats,
+        GREATEST(h.capacity - COUNT(t.id), 0)::int AS remaining_seats
       FROM showtimes st
       JOIN movies m ON m.id = st.movie_id
       JOIN halls h ON h.id = st.hall_id
       JOIN cinemas c ON c.id = h.cinema_id
+      LEFT JOIN tickets t ON t.showtime_id = st.id AND t.ticket_status IN ('active', 'used')
       WHERE st.id = $1
+      GROUP BY
+        st.id,
+        st.movie_id,
+        m.title,
+        m.genre,
+        m.duration_minutes,
+        st.starts_at,
+        st.ends_at,
+        st.base_price,
+        c.id,
+        c.name,
+        c.city,
+        h.id,
+        h.name,
+        h.capacity
     `,
     [showtimeId],
   );
@@ -150,6 +190,8 @@ router.get("/:showtimeId", asyncHandler(async (req, res) => {
       name: row.hall_name,
       capacity: row.hall_capacity,
     },
+    soldSeats: row.sold_seats,
+    remainingSeats: row.remaining_seats,
   });
 }));
 
