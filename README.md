@@ -49,7 +49,7 @@ Password for all demo accounts: `password123`
 
 ## Screenshots
 
-Add final UI screenshots here before submission.
+
 
 ## Technical Notes
 
