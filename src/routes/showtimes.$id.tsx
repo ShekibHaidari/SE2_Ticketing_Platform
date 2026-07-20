@@ -4,7 +4,7 @@ import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { useDB } from "./index";
 import { useAuth } from "@/lib/auth";
-import { createReservation, generateSeats, getBookedSeats, getLockedSeats, db } from "@/lib/store";
+import { createReservation, generateSeats, getBookedSeats, getLockedSeats } from "@/lib/store";
 import { formatDate, formatTime, money, toFa } from "@/lib/format";
 import { toast } from "sonner";
 import { MapPin, Clock, ArrowLeft, Info } from "lucide-react";
@@ -27,11 +27,6 @@ function SeatPicker() {
   const movie = showtime ? data.movies.find(m => m.id === showtime.movieId) : null;
   const cinema = showtime ? data.cinemas.find(c => c.id === showtime.cinemaId) : null;
 
-  useEffect(() => {
-    const t = setInterval(() => db.purgeExpired(), 10000);
-    return () => clearInterval(t);
-  }, []);
-
   const seatMap = useMemo(() => hall ? generateSeats(hall) : [], [hall]);
   const booked = useMemo(() => showtime ? new Set(getBookedSeats(showtime.id)) : new Set<string>(), [data, showtime]);
   const locked = useMemo(() => showtime ? new Set(getLockedSeats(showtime.id, user?.id)) : new Set<string>(), [data, showtime, user]);
@@ -52,12 +47,15 @@ function SeatPicker() {
     });
   };
 
-  const proceed = () => {
+  const proceed = async () => {
     if (!user) { toast.error("برای رزرو ابتدا وارد شوید"); navigate({ to: "/login" }); return; }
     if (selected.length === 0) { toast.error("حداقل یک صندلی انتخاب کنید"); return; }
-    const res = createReservation(showtime.id, user.id, selected);
-    if ("error" in res) { toast.error(res.error); return; }
-    navigate({ to: "/checkout/$rid", params: { rid: res.id } });
+    try {
+      const reservation = await createReservation(showtime.id, selected);
+      navigate({ to: "/checkout/$rid", params: { rid: reservation.id } });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "رزرو ناموفق بود");
+    }
   };
 
   const total = showtime.price * selected.length;

@@ -54,9 +54,8 @@ docker compose logs -f ticketing-rabbitmq
 On first startup, PostgreSQL automatically loads:
 
 - `database/schema.sql`
-- `database/seed.sql`
 
-This creates the schema and the demo users, venue, seats, and events.
+The API applies this schema and creates demo users and cinema data when the database is empty.
 
 ## Architectural Note
 

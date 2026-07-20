@@ -40,9 +40,9 @@ function StaffPage() {
     return data.tickets.filter(t => t.usedBy === user?.id && t.usedAt && new Date(t.usedAt).toDateString() === today).length;
   }, [data.tickets, user]);
 
-  const doValidate = () => {
+  const doValidate = async () => {
     if (!code.trim() || !user) return;
-    const res = validateTicket(code, user.id);
+    const res = await validateTicket(code);
     if (res.error) { setResult({ kind: "err", error: res.error, ticket: res.ticket }); setCode(""); return; }
     const t = res.ticket!;
     const showtime = data.showtimes.find(s => s.id === t.showtimeId);

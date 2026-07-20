@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => {
         },
         server: { entry: "server" },
       }),
-      nitro({ defaultPreset: "cloudflare-module" }),
+      nitro({ defaultPreset: "node-server" }),
       react(),
     ],
     define: Object.fromEntries(
@@ -54,6 +54,9 @@ export default defineConfig(({ mode }) => {
     server: {
       host: "::",
       port: 8080,
+      proxy: {
+        "/api": "http://localhost:3000",
+      },
     },
     ...(isDevelopmentBuild
       ? {

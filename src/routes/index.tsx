@@ -4,27 +4,17 @@ import { Layout } from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { db, EMPTY_DB } from "@/lib/store";
+import { EMPTY_DB, getDBSnapshot, subscribeDB } from "@/lib/store";
 import { toFa, formatTime as faTime, formatDate as faDateShort } from "@/lib/format";
 import {
   Sparkles, Ticket, ShieldCheck, LayoutDashboard,
   Clock, MapPin, Star, PlayCircle, Film, ArrowLeft, Calendar,
 } from "lucide-react";
 
-function subscribe(cb: () => void) {
-  if (typeof window === "undefined") return () => {};
-  window.addEventListener("cinema_db_update", cb);
-  window.addEventListener("storage", cb);
-  return () => {
-    window.removeEventListener("cinema_db_update", cb);
-    window.removeEventListener("storage", cb);
-  };
-}
-
 const getServerSnapshot = () => EMPTY_DB;
 
 export function useDB() {
-  return useSyncExternalStore(subscribe, () => db.get(), getServerSnapshot);
+  return useSyncExternalStore(subscribeDB, getDBSnapshot, getServerSnapshot);
 }
 
 export const Route = createFileRoute("/")({

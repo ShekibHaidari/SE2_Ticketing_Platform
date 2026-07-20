@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useDB } from "./index";
-import { db } from "@/lib/store";
+import { addCinema, addHall, addMovie, addShowtime, deleteMovie, deleteShowtime } from "@/lib/store";
 import { formatDateTime, money, toFa } from "@/lib/format";
 import { toast } from "sonner";
 import { Film, Building2, Calendar, TrendingUp, Plus } from "lucide-react";
@@ -18,8 +18,6 @@ import { Film, Building2, Calendar, TrendingUp, Plus } from "lucide-react";
 export const Route = createFileRoute("/manager")({
   component: ManagerDashboard,
 });
-
-const uid = () => Math.random().toString(36).slice(2, 10);
 
 function ManagerDashboard() {
   return (
@@ -79,24 +77,23 @@ function MoviesTab() {
   const data = useDB();
   const [form, setForm] = useState({ title: "", genre: "درام", duration: "120", rating: "+۱۳", description: "", posterUrl: "" });
 
-  const add = () => {
+  const add = async () => {
     if (!form.title.trim() || !form.posterUrl.trim()) { toast.error("عنوان و پوستر لازم است"); return; }
-    db.set(d => {
-      d.movies.push({
-        id: uid(),
+    try {
+      await addMovie({
         title: form.title, genre: form.genre,
         duration: parseInt(form.duration) || 100,
         rating: form.rating, description: form.description,
-        posterUrl: form.posterUrl, published: true, createdAt: new Date().toISOString(),
+        posterUrl: form.posterUrl, published: true,
       });
-    });
-    toast.success("فیلم اضافه شد");
-    setForm({ title: "", genre: "درام", duration: "120", rating: "+۱۳", description: "", posterUrl: "" });
+      toast.success("فیلم اضافه شد");
+      setForm({ title: "", genre: "درام", duration: "120", rating: "+۱۳", description: "", posterUrl: "" });
+    } catch (error) { toast.error(error instanceof Error ? error.message : "افزودن ناموفق بود"); }
   };
 
-  const remove = (id: string) => {
-    db.set(d => { d.movies = d.movies.filter(m => m.id !== id); d.showtimes = d.showtimes.filter(s => s.movieId !== id); });
-    toast.success("حذف شد");
+  const remove = async (id: string) => {
+    try { await deleteMovie(id); toast.success("حذف شد"); }
+    catch (error) { toast.error(error instanceof Error ? error.message : "حذف ناموفق بود"); }
   };
 
   return (
@@ -145,17 +142,17 @@ function CinemasTab() {
   const [cinema, setCinema] = useState({ name: "", city: "", address: "" });
   const [hall, setHall] = useState({ cinemaId: data.cinemas[0]?.id || "", name: "", rows: "6", seatsPerRow: "10" });
 
-  const addCinema = () => {
+  const createCinema = async () => {
     if (!cinema.name.trim()) { toast.error("نام سینما لازم است"); return; }
-    db.set(d => { d.cinemas.push({ id: uid(), ...cinema }); });
-    toast.success("سینما اضافه شد");
-    setCinema({ name: "", city: "", address: "" });
+    try { await addCinema(cinema); toast.success("سینما اضافه شد"); setCinema({ name: "", city: "", address: "" }); }
+    catch (error) { toast.error(error instanceof Error ? error.message : "افزودن ناموفق بود"); }
   };
-  const addHall = () => {
+  const createHall = async () => {
     if (!hall.name.trim() || !hall.cinemaId) { toast.error("اطلاعات ناقص است"); return; }
-    db.set(d => { d.halls.push({ id: uid(), cinemaId: hall.cinemaId, name: hall.name, rows: parseInt(hall.rows) || 5, seatsPerRow: parseInt(hall.seatsPerRow) || 8 }); });
-    toast.success("سالن اضافه شد");
-    setHall({ ...hall, name: "" });
+    try {
+      await addHall({ cinemaId: hall.cinemaId, name: hall.name, rows: parseInt(hall.rows) || 5, seatsPerRow: parseInt(hall.seatsPerRow) || 8 });
+      toast.success("سالن اضافه شد"); setHall({ ...hall, name: "" });
+    } catch (error) { toast.error(error instanceof Error ? error.message : "افزودن ناموفق بود"); }
   };
 
   return (
@@ -165,7 +162,7 @@ function CinemasTab() {
           <div><Label>نام</Label><Input value={cinema.name} onChange={e => setCinema({ ...cinema, name: e.target.value })} /></div>
           <div><Label>شهر</Label><Input value={cinema.city} onChange={e => setCinema({ ...cinema, city: e.target.value })} /></div>
           <div><Label>آدرس</Label><Input value={cinema.address} onChange={e => setCinema({ ...cinema, address: e.target.value })} /></div>
-          <Button onClick={addCinema} className="w-full"><Plus className="size-4 ml-1" /> افزودن سینما</Button>
+          <Button onClick={createCinema} className="w-full"><Plus className="size-4 ml-1" /> افزودن سینما</Button>
           <div className="border-t pt-3">
             <div className="text-sm font-medium mb-2">سینماهای موجود</div>
             {data.cinemas.map(c => <div key={c.id} className="text-sm py-1">{c.name} — {c.city}</div>)}
@@ -185,7 +182,7 @@ function CinemasTab() {
             <div><Label>تعداد ردیف</Label><Input type="number" value={hall.rows} onChange={e => setHall({ ...hall, rows: e.target.value })} /></div>
             <div><Label>صندلی در ردیف</Label><Input type="number" value={hall.seatsPerRow} onChange={e => setHall({ ...hall, seatsPerRow: e.target.value })} /></div>
           </div>
-          <Button onClick={addHall} className="w-full"><Plus className="size-4 ml-1" /> افزودن سالن</Button>
+          <Button onClick={createHall} className="w-full"><Plus className="size-4 ml-1" /> افزودن سالن</Button>
           <div className="border-t pt-3">
             <div className="text-sm font-medium mb-2">سالن‌های موجود</div>
             {data.halls.map(h => {
@@ -203,19 +200,18 @@ function ShowtimesTab() {
   const data = useDB();
   const [form, setForm] = useState({ movieId: data.movies[0]?.id || "", hallId: data.halls[0]?.id || "", date: "", time: "20:00", price: "150000" });
 
-  const add = () => {
+  const add = async () => {
     if (!form.movieId || !form.hallId || !form.date) { toast.error("اطلاعات ناقص است"); return; }
-    const hall = data.halls.find(h => h.id === form.hallId)!;
     const dt = new Date(`${form.date}T${form.time}:00`);
-    db.set(d => {
-      d.showtimes.push({ id: uid(), movieId: form.movieId, hallId: form.hallId, cinemaId: hall.cinemaId, startsAt: dt.toISOString(), price: parseInt(form.price) || 100000 });
-    });
-    toast.success("سانس اضافه شد");
+    try {
+      await addShowtime({ movieId: form.movieId, hallId: form.hallId, startsAt: dt.toISOString(), price: parseInt(form.price) || 100000 });
+      toast.success("سانس اضافه شد");
+    } catch (error) { toast.error(error instanceof Error ? error.message : "افزودن ناموفق بود"); }
   };
 
-  const remove = (id: string) => {
-    db.set(d => { d.showtimes = d.showtimes.filter(s => s.id !== id); });
-    toast.success("حذف شد");
+  const remove = async (id: string) => {
+    try { await deleteShowtime(id); toast.success("حذف شد"); }
+    catch (error) { toast.error(error instanceof Error ? error.message : "حذف ناموفق بود"); }
   };
 
   return (

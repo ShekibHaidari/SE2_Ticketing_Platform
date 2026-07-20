@@ -47,6 +47,14 @@ function isH3SwallowedErrorBody(body: string): boolean {
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const url = new URL(request.url);
+      const apiUrl = typeof process !== "undefined" ? process.env.API_URL : undefined;
+      if (apiUrl && url.pathname.startsWith("/api/")) {
+        const target = new URL(`${url.pathname}${url.search}`, apiUrl);
+        const headers = new Headers(request.headers);
+        headers.set("origin", new URL(apiUrl).origin);
+        return fetch(new Request(target, { method: request.method, headers, body: request.body, redirect: "manual", duplex: "half" } as RequestInit));
+      }
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);

@@ -54,7 +54,7 @@ export function Layout({ children }: { children: ReactNode }) {
                     <div className="text-muted-foreground text-[10px] flex items-center gap-0.5">{dashIcon}{roleLabel[user.role]}</div>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => { logout(); navigate({ to: "/" }); }} className="hidden md:inline-flex">
+                <Button variant="ghost" size="sm" onClick={async () => { await logout(); navigate({ to: "/" }); }} className="hidden md:inline-flex">
                   <LogOut className="size-4 ml-1" /> خروج
                 </Button>
               </>
@@ -79,7 +79,7 @@ export function Layout({ children }: { children: ReactNode }) {
               {user && <MobileLink to={dashPath} icon={dashIcon} onClick={closeMenu}>{dashLabel}</MobileLink>}
               {user && (
                 <button
-                  onClick={() => { logout(); closeMenu(); navigate({ to: "/" }); }}
+                  onClick={async () => { await logout(); closeMenu(); navigate({ to: "/" }); }}
                   className="flex items-center gap-2 px-3 py-3 border-t border-border text-destructive text-sm mt-1"
                 >
                   <LogOut className="size-4" /> خروج از حساب

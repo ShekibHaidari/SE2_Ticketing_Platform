@@ -47,22 +47,30 @@ function LoginPage() {
     setLoading(true);
     await new Promise(r => setTimeout(r, 300));
     if (mode === "login") {
-      const r = login(email, password);
-      setLoading(false);
-      if (!r.ok) { toast.error(r.error!); return; }
-      toast.success(`خوش آمدید، ${r.user!.name}`);
-      redirectByRole(r.user!.role);
+      try {
+        const user = await login(email, password);
+        toast.success(`خوش آمدید، ${user.name}`);
+        redirectByRole(user.role);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "ورود ناموفق بود");
+      } finally {
+        setLoading(false);
+      }
     } else {
       if (!name.trim()) { setLoading(false); toast.error("نام را وارد کنید"); return; }
-      const r = register(email, password, name);
-      setLoading(false);
-      if (!r.ok) { toast.error(r.error!); return; }
-      toast.success("حساب شما با موفقیت ساخته شد");
-      navigate({ to: "/" });
+      try {
+        await register(email, password, name);
+        toast.success("حساب شما با موفقیت ساخته شد");
+        navigate({ to: "/" });
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "ثبت‌نام ناموفق بود");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  const useDemo = (d: typeof demos[number]) => {
+  const selectDemo = (d: typeof demos[number]) => {
     setMode("login");
     setEmail(d.email);
     setPassword("password123");
@@ -190,7 +198,7 @@ function LoginPage() {
                 {demos.map(d => (
                   <button
                     key={d.email}
-                    onClick={() => useDemo(d)}
+                    onClick={() => selectDemo(d)}
                     className={`flex items-center gap-2 p-2 rounded-lg border text-right text-xs transition hover:scale-[1.02] ${d.tone}`}
                   >
                     <span className="shrink-0">{d.icon}</span>

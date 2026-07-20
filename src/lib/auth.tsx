@@ -1,60 +1,44 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { db, type Role, type User } from "./store";
+import { api, refreshDB, type Role, type User } from "./store";
 
 interface AuthCtx {
   user: User | null;
-  login: (email: string, password: string) => { ok: boolean; error?: string; user?: User };
-  logout: () => void;
-  register: (email: string, password: string, name: string) => { ok: boolean; error?: string };
+  login: (email: string, password: string) => Promise<User>;
+  logout: () => Promise<void>;
+  register: (email: string, password: string, name: string) => Promise<User>;
 }
 
 const Ctx = createContext<AuthCtx | null>(null);
-const SESSION_KEY = "cinema_session_v1";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    try {
-      const uid = localStorage.getItem(SESSION_KEY);
-      if (uid) {
-        const u = db.get().users.find(x => x.id === uid) || null;
-        setUser(u);
-      }
-    } catch {}
-    setReady(true);
-    const onStorage = () => {
-      const uid = localStorage.getItem(SESSION_KEY);
-      setUser(uid ? db.get().users.find(x => x.id === uid) || null : null);
-    };
-    window.addEventListener("cinema_db_update", onStorage);
-    return () => window.removeEventListener("cinema_db_update", onStorage);
+    Promise.all([api<{ user: User | null }>("/auth/me"), refreshDB()])
+      .then(([session]) => setUser(session.user))
+      .catch(error => console.error("Unable to initialize application session", error))
+      .finally(() => setReady(true));
   }, []);
 
-  const login: AuthCtx["login"] = (email, password) => {
-    const u = db.get().users.find(x => x.email.toLowerCase() === email.toLowerCase() && x.password === password);
-    if (!u) return { ok: false, error: "ایمیل یا رمز عبور نادرست است" };
-    localStorage.setItem(SESSION_KEY, u.id);
-    setUser(u);
-    return { ok: true, user: u };
+  const login: AuthCtx["login"] = async (email, password) => {
+    const { user } = await api<{ user: User }>("/auth/login", { method: "POST", body: { email, password } });
+    setUser(user);
+    await refreshDB();
+    return user;
   };
 
-  const logout = () => {
-    localStorage.removeItem(SESSION_KEY);
+  const logout = async () => {
+    await api<void>("/auth/logout", { method: "POST" });
     setUser(null);
+    await refreshDB();
   };
 
-  const register: AuthCtx["register"] = (email, password, name) => {
-    const existing = db.get().users.find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (existing) return { ok: false, error: "این ایمیل قبلاً ثبت شده است" };
-    const id = Math.random().toString(36).slice(2, 10);
-    db.set(d => {
-      d.users.push({ id, email, password, name, role: "customer", createdAt: new Date().toISOString() });
-    });
-    localStorage.setItem(SESSION_KEY, id);
-    setUser(db.get().users.find(u => u.id === id)!);
-    return { ok: true };
+  const register: AuthCtx["register"] = async (email, password, name) => {
+    const { user } = await api<{ user: User }>("/auth/register", { method: "POST", body: { email, password, name } });
+    setUser(user);
+    await refreshDB();
+    return user;
   };
 
   if (!ready) return null;
@@ -62,14 +46,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export function useAuth() {
-  const c = useContext(Ctx);
-  if (!c) throw new Error("useAuth outside provider");
-  return c;
+  const context = useContext(Ctx);
+  if (!context) throw new Error("useAuth must be used inside AuthProvider");
+  return context;
 }
 
 export const roleLabel: Record<Role, string> = {
-  customer: "خریدار",
-  manager: "مدیر سینما",
-  staff: "کارمند گیشه",
-  admin: "مدیر سیستم",
+  customer: "خریدار", manager: "مدیر سینما", staff: "کارمند گیشه", admin: "مدیر سیستم",
 };

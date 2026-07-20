@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useDB } from "./index";
-import { db, resetDB, type Role } from "@/lib/store";
+import { deleteUser, resetDB, updateUserRole, type Role } from "@/lib/store";
 import { toFa, money, formatDateTime } from "@/lib/format";
 import { roleLabel } from "@/lib/auth";
 import { Users, Building2, Activity, Trash2, DollarSign, Film, Ticket as TicketIcon, TrendingUp, ShieldCheck, RefreshCw } from "lucide-react";
@@ -78,10 +78,10 @@ function AdminPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
+              onClick={async () => {
                 if (confirm("همه‌ی داده‌ها به حالت اولیه بازمی‌گردد. ادامه؟")) {
-                  resetDB();
-                  toast.success("داده‌ها بازنشانی شد");
+                  try { await resetDB(); toast.success("داده‌ها بازنشانی شد"); }
+                  catch (error) { toast.error(error instanceof Error ? error.message : "بازنشانی ناموفق بود"); }
                 }
               }}
             >
@@ -176,9 +176,9 @@ function AdminPage() {
                         </TableCell>
                         <TableCell dir="ltr" className="text-xs text-muted-foreground">{u.email}</TableCell>
                         <TableCell>
-                          <Select value={u.role} onValueChange={(v: Role) => {
-                            db.set(d => { const x = d.users.find(x => x.id === u.id); if (x) x.role = v; });
-                            toast.success("نقش به‌روزرسانی شد");
+                          <Select value={u.role} onValueChange={async (v: Role) => {
+                            try { await updateUserRole(u.id, v); toast.success("نقش به‌روزرسانی شد"); }
+                            catch (error) { toast.error(error instanceof Error ? error.message : "به‌روزرسانی ناموفق بود"); }
                           }}>
                             <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
                             <SelectContent>
@@ -190,10 +190,10 @@ function AdminPage() {
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">{formatDateTime(u.createdAt)}</TableCell>
                         <TableCell>
-                          <Button size="sm" variant="ghost" onClick={() => {
+                          <Button size="sm" variant="ghost" onClick={async () => {
                             if (!confirm(`حذف کاربر «${u.name}»؟`)) return;
-                            db.set(d => { d.users = d.users.filter(x => x.id !== u.id); });
-                            toast.success("کاربر حذف شد");
+                            try { await deleteUser(u.id); toast.success("کاربر حذف شد"); }
+                            catch (error) { toast.error(error instanceof Error ? error.message : "حذف ناموفق بود"); }
                           }}><Trash2 className="size-4 text-destructive" /></Button>
                         </TableCell>
                       </TableRow>

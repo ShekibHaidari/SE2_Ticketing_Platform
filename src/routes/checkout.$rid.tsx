@@ -65,11 +65,16 @@ function Checkout() {
   const pay = async (success: boolean) => {
     setProcessing(true);
     await new Promise(r => setTimeout(r, 1200));
-    const res = completePayment(reservation.id, success);
-    setProcessing(false);
-    if (res.error) { toast.error(res.error); return; }
-    toast.success("پرداخت موفق. بلیت شما صادر شد.");
-    navigate({ to: "/tickets/$id", params: { id: res.ticket!.id } });
+    try {
+      const res = await completePayment(reservation.id, success);
+      if (res.error) { toast.error(res.error); return; }
+      toast.success("پرداخت موفق. بلیت شما صادر شد.");
+      navigate({ to: "/tickets/$id", params: { id: res.ticket!.id } });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "پرداخت ناموفق بود");
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const expired = remaining === 0;

@@ -12,7 +12,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ../../database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
-      - ../../database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
 
   ticketing-redis:
     image: redis:7-alpine
@@ -42,11 +41,10 @@ services:
     restart: unless-stopped
     environment:
       PORT: 3000
-      NODE_ENV: development
+      NODE_ENV: production
       DATABASE_URL: postgres://${POSTGRES_USER:-ticketing_user}:${POSTGRES_PASSWORD:-ticketing_password}@ticketing-postgres:5432/${POSTGRES_DB:-ticketing_db}
       REDIS_URL: redis://ticketing-redis:6379
       RABBITMQ_URL: amqp://${RABBITMQ_DEFAULT_USER:-guest}:${RABBITMQ_DEFAULT_PASS:-guest}@ticketing-rabbitmq:5672
-      JWT_SECRET: ${JWT_SECRET:-dev_secret_change_me}
       RESERVATION_TTL_SECONDS: ${RESERVATION_TTL_SECONDS:-600}
     depends_on:
       - ticketing-postgres
@@ -63,8 +61,11 @@ services:
     restart: unless-stopped
     depends_on:
       - ticketing-api
+    environment:
+      API_URL: http://ticketing-api:3000
+      PORT: 3000
     ports:
-      - "8080:80"
+      - "8080:3000"
 
   ticketing-prometheus:
     image: prom/prometheus:latest

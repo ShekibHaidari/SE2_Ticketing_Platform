@@ -22,15 +22,26 @@ This project is a Persian/Dari cinema reservation platform built as a final Soft
 - Ticket Staff: validate tickets at entry and prevent reuse
 - System Administrator: review users, roles, and overall system status
 
+## Architecture
+
+- React/TanStack frontend on port `8080`
+- Express API on port `3000`
+- PostgreSQL-owned users, sessions, reservations, payments, and tickets
+- Passwords hashed with bcrypt; authentication uses opaque HTTP-only, SameSite cookies
+- Role checks are enforced by API endpoints rather than only by UI components
+
 ## Setup Commands
 
 ```bash
 npm install
-npm run build
+docker compose -f infra/docker/docker-compose.yml up ticketing-postgres -d
+npm run typecheck
 npm run dev
 ```
 
 Open the application in your browser at `http://localhost:8080`.
+
+Copy `.env.example` to `.env` if PostgreSQL is not using the documented local credentials. The API creates its schema and demo data on first startup.
 
 ## Demo Accounts
 
@@ -54,6 +65,6 @@ Password for all demo accounts: `password123`
 ## Technical Notes
 
 - Frontend stack: TanStack Start, React 19, Vite, Tailwind CSS v4, and shadcn/ui
-- Data layer: local demo persistence centered in `src/lib/store.ts`
+- Data layer: PostgreSQL-backed API in `src/backend`; the browser receives role-filtered projections
 - SSR entry: `src/server.ts`
 - Main documentation: `docs/SRS.md` and `docs/srs.pdf`
