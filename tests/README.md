@@ -16,7 +16,14 @@ The focus is on:
 - mutation testing strategy,
 - coverage goals.
 
-These files are planning and documentation artifacts for the course project, not a complete automated test suite.
+The repository now includes an automated backend domain suite for reservation, payment, expiry,
+ownership, conflict, and single-use ticket rules. Run it with:
+
+```bash
+npm test
+```
+
+The remaining Markdown files are planning and manual QA artifacts rather than executable tests.
 
 ## Coverage Goals
 

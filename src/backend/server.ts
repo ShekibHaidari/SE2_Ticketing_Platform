@@ -3,6 +3,12 @@ import bcrypt from "bcryptjs";
 import express, { type NextFunction, type Request, type Response } from "express";
 import type { DB, Role, User } from "../lib/store";
 import { initializeDatabase, listUsers, pool, resetBusinessState, updateState } from "./database";
+import {
+  completePayment as completePaymentInState,
+  createReservation as createReservationInState,
+  purgeExpired,
+  validateTicket as validateTicketInState,
+} from "./domain";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
@@ -87,12 +93,6 @@ app.post("/api/auth/logout", async (req, res) => {
   res.status(204).end();
 });
 
-function purgeExpired(state: Omit<DB, "users">) {
-  const now = Date.now();
-  state.locks = state.locks.filter(lock => new Date(lock.expiresAt).getTime() > now);
-  state.reservations.forEach(r => { if (r.status === "pending" && new Date(r.expiresAt).getTime() <= now) r.status = "cancelled"; });
-}
-
 app.get("/api/state", async (req: AuthRequest, res) => {
   const state = await updateState(current => { purgeExpired(current); return current; });
   const user = req.user;
@@ -110,55 +110,21 @@ app.get("/api/state", async (req: AuthRequest, res) => {
 
 app.post("/api/reservations", requireAuth, async (req: AuthRequest, res) => {
   const showtimeId = String(req.body.showtimeId ?? "");
-  const seats: string[] = [...new Set<string>(Array.isArray(req.body.seats) ? req.body.seats.map((seat: unknown) => String(seat)) : [])];
-  const reservation = await updateState(state => {
-    purgeExpired(state);
-    const showtime = state.showtimes.find(s => s.id === showtimeId);
-    const hall = showtime && state.halls.find(h => h.id === showtime.hallId);
-    if (!showtime || !hall) throw Object.assign(new Error("سانس یافت نشد"), { status: 404 });
-    const validSeats = new Set(Array.from({ length: hall.rows }, (_, row) => Array.from({ length: hall.seatsPerRow }, (_, col) => `${"ABCDEFGHIJKL"[row]}${col + 1}`)).flat());
-    if (!seats.length || seats.length > 8 || seats.some(seat => !validSeats.has(seat))) throw Object.assign(new Error("صندلی‌های انتخاب‌شده معتبر نیستند"), { status: 400 });
-    const unavailable = new Set([
-      ...state.tickets.filter(t => t.showtimeId === showtimeId && t.status !== "cancelled").flatMap(t => t.seats),
-      ...state.locks.filter(l => l.showtimeId === showtimeId && l.userId !== req.user!.id).map(l => l.seatLabel),
-    ]);
-    if (seats.some(seat => unavailable.has(seat))) throw Object.assign(new Error("یکی از صندلی‌ها دیگر در دسترس نیست"), { status: 409 });
-    state.locks = state.locks.filter(l => l.showtimeId !== showtimeId || l.userId !== req.user!.id);
-    const now = Date.now(); const expiresAt = new Date(now + 600000).toISOString();
-    seats.forEach(seatLabel => state.locks.push({ id: crypto.randomUUID(), showtimeId, seatLabel, userId: req.user!.id, expiresAt }));
-    const item = { id: crypto.randomUUID(), showtimeId, userId: req.user!.id, seats, total: showtime.price * seats.length, status: "pending" as const, createdAt: new Date(now).toISOString(), expiresAt };
-    state.reservations.push(item); return item;
-  });
+  const reservation = await updateState(state =>
+    createReservationInState(state, req.user!.id, showtimeId, req.body.seats),
+  );
   res.status(201).json(reservation);
 });
 
 app.post("/api/reservations/:id/payment", requireAuth, async (req: AuthRequest, res) => {
-  const result = await updateState(state => {
-    purgeExpired(state);
-    const reservation = state.reservations.find(r => r.id === req.params.id && r.userId === req.user!.id);
-    if (!reservation) throw Object.assign(new Error("رزرو یافت نشد"), { status: 404 });
-    if (reservation.status !== "pending") throw Object.assign(new Error("این رزرو دیگر معتبر نیست"), { status: 409 });
-    const success = req.body.success === true;
-    state.payments.push({ id: crypto.randomUUID(), reservationId: reservation.id, userId: req.user!.id, amount: reservation.total, status: success ? "success" : "failed", createdAt: new Date().toISOString() });
-    if (!success) { reservation.status = "cancelled"; state.locks = state.locks.filter(l => l.userId !== req.user!.id || l.showtimeId !== reservation.showtimeId); return { error: "پرداخت ناموفق بود" }; }
-    const code = `TKT-${crypto.randomBytes(6).toString("base64url").toUpperCase().slice(0, 8)}`;
-    const ticket = { id: crypto.randomUUID(), code, reservationId: reservation.id, userId: req.user!.id, showtimeId: reservation.showtimeId, seats: reservation.seats, amount: reservation.total, status: "valid" as const, createdAt: new Date().toISOString() };
-    state.tickets.push(ticket); reservation.status = "paid";
-    state.locks = state.locks.filter(l => l.userId !== req.user!.id || l.showtimeId !== reservation.showtimeId);
-    return { ticket };
-  });
+  const result = await updateState(state =>
+    completePaymentInState(state, req.user!.id, String(req.params.id), req.body.success === true),
+  );
   res.json(result);
 });
 
 app.post("/api/tickets/validate", requireRole("staff", "admin"), async (req: AuthRequest, res) => {
-  const code = String(req.body.code ?? "").trim().toUpperCase();
-  const result = await updateState(state => {
-    const ticket = state.tickets.find(t => t.code.toUpperCase() === code);
-    if (!ticket) return { ok: false, error: "بلیت یافت نشد" };
-    if (ticket.status !== "valid") return { ok: false, ticket, error: ticket.status === "used" ? "این بلیت قبلاً استفاده شده است" : "این بلیت لغو شده است" };
-    ticket.status = "used"; ticket.usedAt = new Date().toISOString(); ticket.usedBy = req.user!.id;
-    return { ok: true, ticket };
-  });
+  const result = await updateState(state => validateTicketInState(state, req.user!.id, req.body.code));
   res.json(result);
 });
 

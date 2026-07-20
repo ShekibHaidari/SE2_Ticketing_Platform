@@ -13,6 +13,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/backend-domain.test.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
