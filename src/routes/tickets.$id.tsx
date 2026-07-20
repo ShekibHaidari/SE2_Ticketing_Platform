@@ -32,6 +32,16 @@ function TicketPage() {
     ticket.status === "used" ? <Badge variant="secondary"><XCircle className="size-3 ml-1" /> استفاده شده</Badge> :
     <Badge variant="destructive">لغو شده</Badge>;
 
+  const copyTicketCode = async () => {
+    try {
+      if (!navigator.clipboard) throw new Error("Clipboard API unavailable");
+      await navigator.clipboard.writeText(ticket.code);
+      toast.success("کد بلیت کپی شد");
+    } catch {
+      toast.error("کپی کد بلیت امکان‌پذیر نیست");
+    }
+  };
+
   return (
     <Layout>
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
@@ -108,7 +118,7 @@ function TicketPage() {
           <Button variant="outline" className="flex-1" onClick={() => { window.print(); }}>
             <Download className="size-4 ml-2" /> چاپ / ذخیره
           </Button>
-          <Button variant="outline" className="flex-1" onClick={() => { navigator.clipboard.writeText(ticket.code); toast.success("کد بلیت کپی شد"); }}>
+          <Button variant="outline" className="flex-1" onClick={copyTicketCode}>
             کپی کد بلیت
           </Button>
           <Button asChild className="flex-1"><Link to="/my-tickets">بلیت‌های من</Link></Button>

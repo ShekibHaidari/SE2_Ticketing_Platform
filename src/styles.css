@@ -78,6 +78,7 @@
   user-select: none;
 }
 .seat:hover:not(.seat-booked):not(.seat-locked) { transform: translateY(-2px); }
+.seat:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
 .seat-available { background: var(--muted); color: var(--muted-foreground); }
 .seat-selected { background: var(--primary); color: var(--primary-foreground); }
 .seat-booked { background: oklch(0.35 0.05 25); color: oklch(0.55 0.05 25); cursor: not-allowed; }

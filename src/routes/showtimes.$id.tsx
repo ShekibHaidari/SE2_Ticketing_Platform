@@ -75,10 +75,15 @@ function SeatPicker() {
       <div className="border-b border-border bg-accent/30">
         <div className="max-w-6xl mx-auto px-4 py-5 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Link to="/movies/$id" params={{ id: movie.id }} className="text-muted-foreground hover:text-foreground">
+            <Link
+              to="/movies/$id"
+              params={{ id: movie.id }}
+              className="text-muted-foreground hover:text-foreground"
+              aria-label={`بازگشت به صفحه فیلم ${movie.title}`}
+            >
               <ArrowLeft className="size-5" />
             </Link>
-            <img src={movie.posterUrl} alt="" className="w-12 h-16 rounded object-cover hidden sm:block" />
+            <img src={movie.posterUrl} alt={`پوستر فیلم ${movie.title}`} className="w-12 h-16 rounded object-cover hidden sm:block" />
             <div>
               <h1 className="text-lg md:text-xl font-bold">{movie.title}</h1>
               <div className="text-xs text-muted-foreground flex items-center gap-3 flex-wrap mt-0.5">
@@ -104,12 +109,17 @@ function SeatPicker() {
         {/* Screen + seats */}
         <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
           <div className="max-w-lg mx-auto mb-8">
-            <div className="screen-curve" />
+            <div className="screen-curve" aria-hidden="true" />
             <div className="text-center text-xs text-muted-foreground uppercase tracking-widest">پرده سینما</div>
           </div>
 
           <div className="overflow-x-auto">
-            <div className="min-w-max mx-auto flex flex-col items-center gap-1.5" dir="ltr">
+            <div
+              className="min-w-max mx-auto flex flex-col items-center gap-1.5"
+              dir="ltr"
+              role="group"
+              aria-label={`نقشه صندلی‌های ${hall.name}`}
+            >
               {rows.map((r, i) => (
                 <div key={i} className="flex gap-1.5 items-center">
                   <div className="w-6 text-center text-[11px] text-muted-foreground font-medium">{rowLabels[i]}</div>
@@ -117,6 +127,13 @@ function SeatPicker() {
                     const isBooked = booked.has(s);
                     const isLocked = locked.has(s);
                     const isSel = selected.includes(s);
+                    const seatStatus = isBooked
+                      ? "فروخته شده"
+                      : isLocked
+                        ? "در حال رزرو توسط کاربر دیگر"
+                        : isSel
+                          ? "انتخاب شده"
+                          : "آزاد";
                     const cls = isBooked
                       ? "seat seat-booked"
                       : isLocked
@@ -128,7 +145,14 @@ function SeatPicker() {
                     const isAisle = idx === Math.floor(hall.seatsPerRow / 2) - 1;
                     return (
                       <div key={s} className={isAisle ? "flex gap-3.5" : ""}>
-                        <button className={cls} onClick={() => toggle(s)} disabled={isBooked || isLocked} aria-label={`صندلی ${s}`}>
+                        <button
+                          type="button"
+                          className={cls}
+                          onClick={() => toggle(s)}
+                          disabled={isBooked || isLocked}
+                          aria-label={`صندلی ${s}: ${seatStatus}`}
+                          aria-pressed={isSel}
+                        >
                           {s.slice(1)}
                         </button>
                       </div>
@@ -159,7 +183,7 @@ function SeatPicker() {
       <div className="fixed bottom-0 inset-x-0 border-t border-border bg-card/95 backdrop-blur z-30">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-4 flex-wrap">
-            <div>
+            <div aria-live="polite" aria-atomic="true">
               <div className="text-[11px] text-muted-foreground">صندلی‌ها ({toFa(selected.length)})</div>
               <div className="font-semibold text-sm">
                 {selected.length === 0 ? "هنوز صندلی انتخاب نشده" : selected.slice().sort().join("، ")}
@@ -183,7 +207,7 @@ function SeatPicker() {
 function Legend({ cls, label }: { cls: string; label: string }) {
   return (
     <span className="flex items-center gap-1.5">
-      <span className={`seat ${cls}`} style={{ width: 18, height: 18, cursor: "default" }} />
+      <span className={`seat ${cls}`} style={{ width: 18, height: 18, cursor: "default" }} aria-hidden="true" />
       {label}
     </span>
   );
