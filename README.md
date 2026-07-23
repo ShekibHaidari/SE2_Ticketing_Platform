@@ -26,7 +26,8 @@ This project is a Persian/Dari cinema reservation platform built as a final Soft
 
 - React/TanStack frontend on port `8080`
 - Express API on port `3000`
-- PostgreSQL-owned users, sessions, reservations, payments, and tickets
+- Server-owned users, sessions, reservations, payments, and tickets
+- Zero-setup file persistence for local development; PostgreSQL when `DATABASE_URL` is configured
 - Passwords hashed with bcrypt; authentication uses opaque HTTP-only, SameSite cookies
 - Role checks are enforced by API endpoints rather than only by UI components
 
@@ -34,14 +35,14 @@ This project is a Persian/Dari cinema reservation platform built as a final Soft
 
 ```bash
 npm install
-docker compose -f infra/docker/docker-compose.yml up ticketing-postgres -d
 npm run typecheck
 npm run dev
 ```
 
 Open the application in your browser at `http://localhost:8080`.
 
-Copy `.env.example` to `.env` if PostgreSQL is not using the documented local credentials. The API creates its schema and demo data on first startup.
+No database installation is required for local development. Data is stored in `.data/ticketing-dev.json`.
+Set `DATABASE_URL` to use PostgreSQL instead; the API creates its schema and demo data on first startup.
 
 ## Demo Accounts
 

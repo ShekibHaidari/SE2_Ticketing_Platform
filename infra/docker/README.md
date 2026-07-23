@@ -57,6 +57,9 @@ On first startup, PostgreSQL automatically loads:
 
 The API applies this schema and creates demo users and cinema data when the database is empty.
 
+Compose health checks gate startup in dependency order: PostgreSQL, Redis, and RabbitMQ must be
+healthy before the API starts; the API must be healthy before the frontend and Prometheus start.
+
 ## Architectural Note
 
 The local MVP is implemented as a modular monolith so it is easy to run in one API container. The diagrams, Kubernetes manifests, and Terraform artifacts still show how the same domains could be deployed as separate services in a production-oriented environment.

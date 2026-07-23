@@ -2,7 +2,20 @@ import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import express, { type NextFunction, type Request, type Response } from "express";
 import type { DB, Role, User } from "../lib/store";
-import { initializeDatabase, listUsers, pool, resetBusinessState, updateState } from "./database";
+import {
+  createSessionRecord,
+  createUser,
+  deleteSession,
+  deleteUser,
+  findSessionUser,
+  findUserByEmail,
+  healthCheck,
+  initializeDatabase,
+  listUsers,
+  resetBusinessState,
+  updateState,
+  updateUserRole,
+} from "./database";
 import {
   completePayment as completePaymentInState,
   createReservation as createReservationInState,
@@ -36,12 +49,7 @@ const cookies = (req: Request) => Object.fromEntries((req.headers.cookie ?? "").
 app.use(async (req: AuthRequest, _res, next) => {
   const token = cookies(req)[sessionCookie];
   if (!token) return next();
-  const { rows } = await pool.query<User>(
-    `SELECT u.id,u.email,u.name,u.role,u.created_at AS "createdAt"
-     FROM sessions s JOIN users u ON u.id=s.user_id
-     WHERE s.token_hash=$1 AND s.expires_at>now()`, [sha256(token)],
-  );
-  req.user = rows[0];
+  req.user = await findSessionUser(sha256(token));
   next();
 });
 
@@ -53,19 +61,17 @@ const setSessionCookie = (res: Response, token: string) => res.cookie(sessionCoo
 });
 const createSession = async (userId: string, res: Response) => {
   const token = crypto.randomBytes(32).toString("base64url");
-  await pool.query("INSERT INTO sessions(token_hash,user_id,expires_at) VALUES($1,$2,now()+$3::interval)", [sha256(token), userId, `${sessionDays} days`]);
+  const expiresAt = new Date(Date.now() + sessionDays * 86_400_000).toISOString();
+  await createSessionRecord(sha256(token), userId, expiresAt);
   setSessionCookie(res, token);
 };
 
-app.get("/api/health", async (_req, res) => { await pool.query("SELECT 1"); res.json({ ok: true }); });
+app.get("/api/health", async (_req, res) => { await healthCheck(); res.json({ ok: true }); });
 app.get("/api/auth/me", (req: AuthRequest, res) => res.json({ user: req.user ?? null }));
 app.post("/api/auth/login", async (req, res) => {
   const email = String(req.body.email ?? "").trim().toLowerCase();
   const password = String(req.body.password ?? "");
-  const { rows } = await pool.query<(User & { passwordHash: string })>(
-    `SELECT id,email,name,role,created_at AS "createdAt",password_hash AS "passwordHash" FROM users WHERE email=$1`, [email],
-  );
-  const user = rows[0];
+  const user = await findUserByEmail(email);
   if (!user || !(await bcrypt.compare(password, user.passwordHash))) return res.status(401).json({ error: "ایمیل یا رمز عبور نادرست است" });
   await createSession(user.id, res);
   const { passwordHash: _, ...safeUser } = user;
@@ -78,7 +84,7 @@ app.post("/api/auth/register", async (req, res) => {
   if (!/^\S+@\S+\.\S+$/.test(email) || password.length < 8 || name.length < 2) return res.status(400).json({ error: "نام، ایمیل یا رمز عبور معتبر نیست" });
   const user: User = { id: crypto.randomUUID(), email, name, role: "customer", createdAt: new Date().toISOString() };
   try {
-    await pool.query("INSERT INTO users(id,email,password_hash,name,role,created_at) VALUES($1,$2,$3,$4,$5,$6)", [user.id, email, await bcrypt.hash(password, 12), name, user.role, user.createdAt]);
+    await createUser(user, await bcrypt.hash(password, 12));
   } catch (error) {
     if ((error as { code?: string }).code === "23505") return res.status(409).json({ error: "این ایمیل قبلاً ثبت شده است" });
     throw error;
@@ -88,7 +94,7 @@ app.post("/api/auth/register", async (req, res) => {
 });
 app.post("/api/auth/logout", async (req, res) => {
   const token = cookies(req)[sessionCookie];
-  if (token) await pool.query("DELETE FROM sessions WHERE token_hash=$1", [sha256(token)]);
+  if (token) await deleteSession(sha256(token));
   res.clearCookie(sessionCookie, { path: "/" });
   res.status(204).end();
 });
@@ -133,11 +139,11 @@ app.patch("/api/admin/users/:id/role", requireRole("admin"), async (req: AuthReq
   const role = req.body.role as Role;
   if (!["customer", "manager", "staff", "admin"].includes(role)) return res.status(400).json({ error: "نقش معتبر نیست" });
   if (req.params.id === req.user!.id && role !== "admin") return res.status(400).json({ error: "نمی‌توانید نقش ادمین خود را حذف کنید" });
-  await pool.query("UPDATE users SET role=$1 WHERE id=$2", [role, req.params.id]); res.status(204).end();
+  await updateUserRole(String(req.params.id), role); res.status(204).end();
 });
 app.delete("/api/admin/users/:id", requireRole("admin"), async (req: AuthRequest, res) => {
   if (req.params.id === req.user!.id) return res.status(400).json({ error: "نمی‌توانید حساب فعال خود را حذف کنید" });
-  await pool.query("DELETE FROM users WHERE id=$1", [req.params.id]); res.status(204).end();
+  await deleteUser(String(req.params.id)); res.status(204).end();
 });
 
 const manager = express.Router();

@@ -12,6 +12,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ../../database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   ticketing-redis:
     image: redis:7-alpine
@@ -19,6 +25,11 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   ticketing-rabbitmq:
     image: rabbitmq:3-management
@@ -32,6 +43,12 @@ services:
       - "15672:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
 
   ticketing-api:
     build:
@@ -47,11 +64,20 @@ services:
       RABBITMQ_URL: amqp://${RABBITMQ_DEFAULT_USER:-guest}:${RABBITMQ_DEFAULT_PASS:-guest}@ticketing-rabbitmq:5672
       RESERVATION_TTL_SECONDS: ${RESERVATION_TTL_SECONDS:-600}
     depends_on:
-      - ticketing-postgres
-      - ticketing-redis
-      - ticketing-rabbitmq
+      ticketing-postgres:
+        condition: service_healthy
+      ticketing-redis:
+        condition: service_healthy
+      ticketing-rabbitmq:
+        condition: service_healthy
     ports:
       - "3000:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
 
   ticketing-frontend:
     build:
@@ -60,12 +86,19 @@ services:
     container_name: ticketing-frontend
     restart: unless-stopped
     depends_on:
-      - ticketing-api
+      ticketing-api:
+        condition: service_healthy
     environment:
       API_URL: http://ticketing-api:3000
       PORT: 3000
     ports:
       - "8080:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
 
   ticketing-prometheus:
     image: prom/prometheus:latest
@@ -74,7 +107,8 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
     depends_on:
-      - ticketing-api
+      ticketing-api:
+        condition: service_healthy
     ports:
       - "9090:9090"
 
